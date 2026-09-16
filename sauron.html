@@ -1,0 +1,3496 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="scale-labs">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sauron: An Eye for Evidence | Scale Labs</title>
+<meta name="description" content="Introducing Sauron, an evidence-first agentic verifier for long-horizon tasks: every verdict comes with verified, source-located receipts." />
+<style>
+/* ==========================================================================
+   SCALE LABS BLOG POST TEMPLATE
+   --------------------------------------------------------------------------
+   Every class/value below was extracted from the live site (labs.scale.com),
+   including the compiled Tailwind CSS and the Sanity portable-text renderer
+   in the JS bundle — so the block styles here are the site's actual
+   definitions, not an approximation.
+
+   Token vocabulary follows ScaleUI 3's `scale-labs` theme (Geist Mono,
+   radius 0, near-black primary, data-mode dark switch). Token *values* are
+   the live site's measured values, so what renders here is what ships.
+
+   NOTE ON DARK MODE: the live blog is light-only (there is no `data-mode`
+   in the site's CSS). Dark support below is the ScaleUI 3 scale-labs theme
+   applied on top — default is light, matching production exactly. Toggle
+   with `data-mode="dark"` on <html>, or the button in the header.
+   ========================================================================== */
+
+/* ---------- Fonts ---------- */
+@font-face {
+  font-family: "Geist Mono";
+  src: url("fonts/GeistMono-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+/* Aeonik is preloaded site-wide; blog prose is Geist Mono throughout. */
+@font-face { font-family: "Aeonik"; src: url("fonts/Aeonik-Light.woff2")   format("woff2"); font-weight: 300; font-display: swap; }
+@font-face { font-family: "Aeonik"; src: url("fonts/Aeonik-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Aeonik"; src: url("fonts/Aeonik-Medium.woff2")  format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Aeonik"; src: url("fonts/Aeonik-Bold.woff2")    format("woff2"); font-weight: 700; font-display: swap; }
+
+/* ==========================================================================
+   TOKENS — ScaleUI 3 `scale-labs` theme vocabulary, live-site values
+   ========================================================================== */
+:root {
+  /* Site-specific ink + hairline scale (labs.scale.com defines these itself) */
+  --ink: #111;
+  --ink-dim: #333;
+  --ink-faint: #999;
+  --hairline: #d9d9d9;
+
+  --neutral-50:  #fafafa;
+  --neutral-100: #f5f5f5;
+  --neutral-200: #e5e5e5;
+  --neutral-300: #d4d4d4;
+  --neutral-400: #a3a3a3;
+  --neutral-500: #737373;
+  --neutral-600: #525252;
+  --neutral-700: #404040;
+  --neutral-800: #262626;
+  --neutral-900: #171717;
+
+  /* ScaleUI 3 semantic tokens → mapped onto the values the site renders */
+  --background: #fff;
+  --foreground: var(--ink);
+  --card: #fff;
+  --muted: var(--neutral-100);
+  --muted-foreground: var(--neutral-600);
+  --primary: var(--ink);
+  --primary-foreground: #fff;
+  --border: var(--neutral-200);
+  --radius: 0;         /* scale-labs: sharp */
+  --radius-button: 0;  /* scale-labs: sharp */
+
+  /* Typography scale (Tailwind v4 defaults + the site's two custom steps) */
+  --text-xs: .75rem;
+  --text-sm: .875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2_5xl: 1.75rem;  /* custom */
+  --text-3_5xl: 2rem;     /* custom */
+
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-relaxed: 1.625;
+  --leading-prose: 1.8;   /* leading-[1.8] — body copy */
+
+  --tracking-wide: .025em;
+  --tracking-wider: .05em;
+  --tracking-widest: .1em;
+
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, "Roboto Mono", Menlo, Monaco, "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace;
+  --font-sans: "Aeonik", ui-sans-serif, system-ui, sans-serif;
+
+  /* Prism token colors, lifted verbatim from the site's code-block theme */
+  --code-text: #2f3338;
+  --code-punctuation: #6c747f;
+  --code-keyword: #86bff2;
+  --code-property: #bc5649;
+  --code-number: #9a6b21;
+  --code-string: #3e7a45;
+  --code-comment: #8b9099;
+  --code-boolean: #8856c8;
+  --code-regex: #9ad1a0;
+  --code-linenum: #909090;
+}
+
+/* Dark mode — ScaleUI 3 scale-labs (`data-mode="dark"`). Not on the live site. */
+[data-mode="dark"] {
+  --ink: #fafafa;
+  --ink-dim: #d4d4d4;
+  --ink-faint: #8a8a8a;
+  --hairline: #2e2e2e;
+
+  --neutral-50:  #1c1c1c;
+  --neutral-100: #232323;
+  --neutral-200: #2e2e2e;
+  --neutral-300: #3f3f3f;
+  --neutral-400: #949494;
+  --neutral-500: #8f8f8f;
+  --neutral-600: #b0b0b0;
+
+  --background: #171717;   /* oklch(0.145 0 0) */
+  --card: #1c1c1c;
+  --primary: #e5e5e5;      /* oklch(0.9 0 0) */
+  --primary-foreground: #171717;
+
+  /* Code tokens re-tuned for the dark surface — the light values are the
+     site's own and several fail AA on a dark background. All ≥4.5:1 on #232323. */
+  --code-text: #d4d4d4;
+  --code-punctuation: #9aa3af;
+  --code-keyword: #86bff2;
+  --code-property: #e8907f;
+  --code-number: #d9a95c;
+  --code-string: #79c96e;
+  --code-comment: #8f959d;
+  --code-boolean: #b98ae0;
+  --code-regex: #9ad1a0;
+  --code-linenum: #909090;
+}
+
+/* ==========================================================================
+   RESET + BASE
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; border: 0 solid var(--border); }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; cursor: pointer; }
+img { display: block; max-width: 100%; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* lucide icons, inline — matches the site's stroke settings */
+.icon { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+/* mx-auto max-w-[1400px] px-6 lg:px-10 */
+.container { max-width: 1400px; margin-inline: auto; padding-inline: 1.5rem; }
+@media (min-width: 1024px) { .container { padding-inline: 2.5rem; } }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border-width: 0;
+}
+
+/* ==========================================================================
+   SITE HEADER
+   sticky top-0 z-30 w-full bg-white/70 backdrop-blur-xl border-b border-hairline
+   ========================================================================== */
+.site-header {
+  position: sticky; top: 0; z-index: 30; width: 100%;
+  background: color-mix(in srgb, var(--background) 70%, transparent);
+  -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--hairline);
+}
+.site-header__bar { display: flex; align-items: center; justify-content: space-between; padding-inline: 1.5rem; height: 3.5rem; }
+.site-header__logo { display: flex; align-items: center; transition: opacity .15s; }
+.site-header__logo:hover { opacity: .8; }
+.site-header__logo img { width: 140px; height: 19px; }
+[data-mode="dark"] .site-header__logo img { filter: invert(1); }
+
+.site-nav { display: none; align-items: center; gap: .25rem; }
+@media (min-width: 768px) { .site-nav { display: flex; } }
+.site-nav a, .site-nav [aria-current] {
+  font-size: var(--text-xs); letter-spacing: var(--tracking-wide);
+  padding: .25rem .375rem; color: var(--neutral-600);
+  transition: color .15s, background-color .15s;
+}
+.site-nav a:hover { color: var(--ink); background: var(--neutral-100); }
+.site-nav [aria-current] { color: var(--ink); background: var(--neutral-100); cursor: default; }
+
+.icon-btn {
+  display: flex; align-items: center; gap: .375rem; padding: .375rem .5rem;
+  color: var(--neutral-600); transition: color .15s;
+}
+.icon-btn:hover { color: var(--ink); }
+.icon-btn .icon { width: 1rem; height: 1rem; }
+.icon-btn__kbd { font-size: var(--text-xs); }
+@media (max-width: 639px) { .icon-btn__kbd { display: none; } }
+
+.site-header__mobile { display: flex; align-items: center; gap: .5rem; }
+@media (min-width: 768px) { .site-header__mobile { display: none; } }
+.site-header__menu { padding: .5rem; margin: -.5rem; color: var(--neutral-600); }
+.site-header__menu:hover { color: var(--ink); }
+.site-header__menu .icon { width: 1.25rem; height: 1.25rem; }
+
+/* Mobile nav drawer (the live site toggles a panel; this is the same idea) */
+.mobile-nav { display: none; border-top: 1px solid var(--hairline); padding: .5rem 1.5rem 1rem; }
+.mobile-nav[data-open="true"] { display: block; }
+@media (min-width: 768px) { .mobile-nav { display: none !important; } }
+.mobile-nav a {
+  display: block; font-size: var(--text-xs); letter-spacing: var(--tracking-wide);
+  color: var(--neutral-600); padding: .5rem 0;
+}
+.mobile-nav a:hover { color: var(--ink); }
+
+/* ==========================================================================
+   POST HERO
+   border-b border-neutral-200 · container pt-10 pb-12 · centered max-w-3xl
+   ========================================================================== */
+.post-hero { border-bottom: 1px solid var(--neutral-200); }
+.post-hero__inner { padding-top: 2.5rem; padding-bottom: 3rem; }
+
+/* inline-flex items-center gap-1.5 text-xs mb-10 */
+.back-link {
+  display: inline-flex; align-items: center; gap: .375rem;
+  font-size: var(--text-xs); color: var(--neutral-600);
+  margin-bottom: 2.5rem; transition: color .15s;
+}
+.back-link:hover { color: var(--ink); }
+.back-link .icon { width: .875rem; height: .875rem; }
+
+.post-hero__headline { max-width: 48rem; margin-inline: auto; text-align: center; }
+
+/* flex flex-wrap items-center justify-center gap-3 mb-5 */
+.post-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .75rem; margin-bottom: 1.25rem; }
+/* text-xs text-ink border border-hairline px-2 py-0.5 uppercase tracking-wider */
+.post-tag {
+  font-size: var(--text-xs); color: var(--ink);
+  border: 1px solid var(--hairline); padding: .125rem .5rem;
+  text-transform: uppercase; letter-spacing: var(--tracking-wider);
+}
+/* text-xs text-ink-faint uppercase tracking-wider */
+.post-date { font-size: var(--text-xs); color: var(--ink-faint); text-transform: uppercase; letter-spacing: var(--tracking-wider); }
+
+/* text-xl md:text-2_5xl lg:text-3_5xl font-medium leading-tight uppercase tracking-wide mb-6 text-balance
+   NB: leading-tight (1.25) applies at every breakpoint — it overrides the
+   custom sizes' built-in 1.5 line-height. */
+.post-title {
+  font-size: var(--text-xl); font-weight: 500; color: var(--ink);
+  line-height: var(--leading-tight); text-transform: uppercase;
+  letter-spacing: var(--tracking-wide); margin-bottom: 1.5rem; text-wrap: balance;
+}
+@media (min-width: 768px)  { .post-title { font-size: var(--text-2_5xl); } }
+@media (min-width: 1024px) { .post-title { font-size: var(--text-3_5xl); } }
+
+/* dek under the title — mono, quiet, centered like the rest of the hero */
+.post-dek {
+  font-size: var(--text-sm); color: var(--neutral-600);
+  letter-spacing: var(--tracking-wide); margin-bottom: 1.5rem;
+}
+
+/* text-xs text-neutral-600 mb-6, with "By " in neutral-400 */
+.post-byline { font-size: var(--text-xs); color: var(--neutral-600); margin-bottom: 1.5rem; }
+.post-byline__by { color: var(--neutral-400); }
+.post-links { display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem; margin-top: -.25rem; margin-bottom: 1.5rem; }
+.post-links .btn-outline { height: 3rem; padding: .5rem 1.5rem; font-size: var(--text-sm); text-decoration: none; }
+.post-links .btn-outline .icon { width: 1rem; height: 1rem; }
+
+/* ==========================================================================
+   ARTICLE LAYOUT
+   container py-12 lg:py-16 · flex justify-center gap-12 lg:gap-16
+   ========================================================================== */
+.post-body { padding-block: 3rem; }
+@media (min-width: 1024px) { .post-body { padding-block: 4rem; } }
+.post-layout { display: flex; justify-content: center; gap: 3rem; }
+@media (min-width: 1024px) { .post-layout { gap: 4rem; } }
+
+/* max-w-[720px] w-full min-w-0, content wrapped in space-y-5 */
+.prose { max-width: 720px; width: 100%; min-width: 0; }
+.prose > * + * { margin-top: 1.25rem; }
+
+/* ==========================================================================
+   PROSE BLOCKS — verbatim from the site's portable-text renderer
+   ========================================================================== */
+
+/* h2: text-lg md:text-xl font-medium text-ink leading-snug uppercase tracking-wide pt-6 pb-1 scroll-mt-20 */
+.prose h2 {
+  font-size: var(--text-lg); font-weight: 500; color: var(--ink);
+  line-height: var(--leading-snug); text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  padding-top: 1.5rem; padding-bottom: .25rem; scroll-margin-top: 5rem;
+}
+@media (min-width: 768px) { .prose h2 { font-size: var(--text-xl); } }
+
+/* h3: text-base md:text-lg ... pt-4 pb-1 */
+.prose h3 {
+  font-size: var(--text-base); font-weight: 500; color: var(--ink);
+  line-height: var(--leading-snug); text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  padding-top: 1rem; padding-bottom: .25rem; scroll-margin-top: 5rem;
+}
+@media (min-width: 768px) { .prose h3 { font-size: var(--text-lg); } }
+
+/* h4: text-sm font-medium text-ink uppercase tracking-wide pt-4 (no pb) */
+.prose h4 {
+  font-size: var(--text-sm); font-weight: 500; color: var(--ink);
+  text-transform: uppercase; letter-spacing: var(--tracking-wide);
+  padding-top: 1rem; scroll-margin-top: 5rem;
+}
+
+/* normal: text-sm text-neutral-600 leading-[1.8] */
+.prose p { font-size: var(--text-sm); color: var(--neutral-600); line-height: var(--leading-prose); }
+.prose strong { font-weight: 700; }
+.prose em { font-style: italic; }
+
+/* link mark: text-ink underline underline-offset-2 hover:text-neutral-600 */
+.prose a {
+  color: var(--ink); text-decoration: underline;
+  text-underline-offset: 2px; transition: color .15s;
+}
+.prose a:hover { color: var(--neutral-600); }
+
+/* lists: pl-6 space-y-2 list-disc / list-decimal; li text-sm neutral-600 leading-[1.8] */
+.prose ul, .prose ol { padding-left: 1.5rem; }
+.prose ul { list-style-type: disc; }
+.prose ol { list-style-type: decimal; }
+.prose li { font-size: var(--text-sm); color: var(--neutral-600); line-height: var(--leading-prose); }
+.prose li + li { margin-top: .5rem; }
+.prose li > ul, .prose li > ol { margin-top: .5rem; }
+
+/* blockquote: text-neutral-500 italic text-sm leading-[1.8] border-l-2 border-ink pl-4 */
+.prose blockquote {
+  color: var(--neutral-500); font-style: italic;
+  font-size: var(--text-sm); line-height: var(--leading-prose);
+  border-left: 2px solid var(--ink); padding-left: 1rem;
+}
+
+/* inline code mark: bg-neutral-100 text-ink rounded px-1 py-0.5 text-[0.9em] */
+.prose :not(pre) > code {
+  background: var(--neutral-100); color: var(--ink);
+  border-radius: .25rem; padding: .125rem .25rem;
+  font-family: var(--font-mono); font-size: .9em;
+}
+
+/* sup / sub marks: text-[0.75em] align-super|align-sub leading-none */
+.prose sup, .prose sub { font-size: .75em; line-height: 1; }
+.prose sup { vertical-align: super; }
+.prose sub { vertical-align: sub; }
+
+/* ==========================================================================
+   FIGURES
+   ========================================================================== */
+
+/* image: figure.my-8.overflow-hidden > click-to-zoom button > img.w-full.h-auto */
+.figure-image { margin-block: 2rem; overflow: hidden; }
+.figure-image__zoom { display: block; width: 100%; text-align: left; cursor: zoom-in; }
+.figure-image img { width: 100%; height: auto; }
+
+/* externalImage: img.w-full.h-auto.border.border-neutral-200.my-4 */
+.figure-external {
+  width: 100%; height: auto; margin-block: 1rem;
+  border: 1px solid var(--neutral-200);
+}
+
+/* figcaption: mt-2 text-xs text-ink-faint leading-relaxed */
+.prose figcaption {
+  margin-top: .5rem; font-size: var(--text-xs);
+  color: var(--ink-faint); line-height: var(--leading-relaxed);
+}
+
+/* chart: figure.my-8 > title p.mb-1 + description p.mb-4 + div.w-full[height:384px] */
+.figure-chart { margin-block: 2rem; }
+.figure-chart__title {
+  margin-bottom: .25rem; font-size: var(--text-sm); font-weight: 500;
+  color: var(--ink); text-transform: uppercase; letter-spacing: var(--tracking-wide);
+}
+.figure-chart__desc {
+  margin-bottom: 1rem; font-size: var(--text-xs);
+  color: var(--ink-faint); line-height: var(--leading-relaxed);
+}
+.figure-chart__area { width: 100%; height: 384px; }
+
+/* video / embed: figure.my-8 > div.relative.aspect-video > iframe.absolute.inset-0 */
+.figure-video { margin-block: 2rem; }
+.figure-video__frame { position: relative; width: 100%; aspect-ratio: 16 / 9; }
+.figure-video__frame > iframe,
+.figure-video__frame > video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.figure-video > video { width: 100%; height: auto; }
+
+/* Placeholder blocks — delete once real assets land */
+.placeholder {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; height: 100%; padding: 1rem;
+  background: var(--neutral-50); border: 1px dashed var(--neutral-300);
+  color: var(--ink-faint); font-size: var(--text-xs);
+  text-transform: uppercase; letter-spacing: var(--tracking-wider);
+  text-align: center; line-height: var(--leading-relaxed);
+}
+.placeholder--16x9 { aspect-ratio: 1200 / 675; height: auto; }
+
+/* ==========================================================================
+   TABLES
+   figure.my-6 > div.-mx-4.md:mx-0.overflow-x-auto > table.min-w-[480px]
+   ========================================================================== */
+.figure-table { margin-block: 1.5rem; }
+.table-scroll { margin-inline: -1rem; overflow-x: auto; }
+@media (min-width: 768px) { .table-scroll { margin-inline: 0; } }
+
+.prose table {
+  width: 100%; min-width: 480px; border-collapse: collapse;
+  font-family: var(--font-mono); font-size: var(--text-xs);
+}
+@media (min-width: 768px) { .prose table { font-size: var(--text-sm); } }
+
+/* header row: border-b border-ink · body rows: border-b border-neutral-200 */
+.prose thead tr, .prose tr[data-header] { border-bottom: 1px solid var(--ink); }
+.prose tbody tr:not([data-header]) { border-bottom: 1px solid var(--neutral-200); }
+
+/* th: px-2.5 py-2 font-bold text-ink uppercase tracking-wider text-xs bg-neutral-50 */
+.prose th {
+  padding: .5rem .625rem; text-align: left; white-space: normal;
+  font-weight: 700; color: var(--ink); text-transform: uppercase;
+  letter-spacing: var(--tracking-wider); font-size: var(--text-xs);
+  background: var(--neutral-50);
+}
+/* td: px-2.5 py-2 text-neutral-600 */
+.prose td { padding: .5rem .625rem; text-align: left; white-space: normal; color: var(--neutral-600); }
+/* cell-level bold: font-bold text-ink */
+.prose td[data-bold] { font-weight: 700; color: var(--ink); }
+/* grouped table headers (Table 2): group label underlined per group, blank gap column between groups */
+.prose thead tr:has(.t-grp) { border-bottom: 0; }
+.prose th.t-grp { text-align: center; border-bottom: 1px solid var(--ink); }
+.prose th.t-grp-blank { border-bottom: 0; vertical-align: bottom; }
+.prose .t-gap { width: 1.25rem; padding: 0; border: 0; }
+
+/* leaderboardTable variant — roomier cells: px-3 py-2.5 */
+.prose table[data-leaderboard] th,
+.prose table[data-leaderboard] td { padding: .625rem .75rem; }
+
+/* ==========================================================================
+   CODE BLOCK
+   my-8 overflow-hidden rounded-md border border-hairline bg-neutral-50
+   header: min-h-12 border-b border-hairline bg-neutral-100 px-4
+   pre: bg-neutral-100, padding 18px 20px, 12px/1.8, line numbers
+   ========================================================================== */
+.code-block {
+  margin-block: 2rem; overflow: hidden;
+  border: 1px solid var(--hairline); border-radius: .375rem; /* site uses rounded-md here */
+  background: var(--neutral-50);
+}
+.code-block__bar {
+  display: flex; align-items: center; justify-content: space-between;
+  min-height: 3rem; padding-inline: 1rem;
+  border-bottom: 1px solid var(--hairline); background: var(--neutral-100);
+}
+.code-block__file { min-width: 0; font-size: var(--text-xs); color: var(--ink-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.code-block__copy {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 2.25rem; height: 2.25rem; color: var(--neutral-600);
+  border-radius: var(--radius); transition: color .15s, background-color .15s;
+}
+.code-block__copy:hover { color: var(--ink); background: var(--neutral-200); }
+.code-block__copy .icon { width: 1rem; height: 1rem; }
+.code-block pre {
+  margin: 0; padding: 18px 20px; overflow-x: auto;
+  background: var(--neutral-100);
+}
+.code-block code {
+  display: block; font-family: var(--font-mono);
+  font-size: 12px; line-height: 1.8; color: var(--code-text);
+  white-space: pre; tab-size: 2; hyphens: none;
+}
+.code-block .ln { display: block; white-space: pre; }
+.code-block .ln::before {
+  content: attr(data-line);
+  display: inline-block; width: 2.2em; margin-right: 1em;
+  text-align: right; color: var(--code-linenum); user-select: none;
+}
+/* Prism token colors — exact values from the site's highlighter theme */
+.tok-comment  { color: var(--code-comment); }
+.tok-punct    { color: var(--code-punctuation); }
+.tok-keyword  { color: var(--code-keyword); }
+.tok-function { color: var(--code-keyword); }
+.tok-class    { color: var(--code-keyword); }
+.tok-property { color: var(--code-property); }
+.tok-tag      { color: var(--code-property); }
+.tok-number   { color: var(--code-number); }
+.tok-string   { color: var(--code-string); }
+.tok-boolean  { color: var(--code-boolean); }
+.tok-regex    { color: var(--code-regex); }
+
+/* ==========================================================================
+   PAPER LINK  —  div.my-6 > Button variant="outline"
+   ========================================================================== */
+.btn-outline {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  white-space: nowrap; height: 2.5rem; padding: .5rem 1rem;
+  border: 1px solid var(--ink); background: transparent; color: var(--ink);
+  font-size: var(--text-xs); font-weight: 500;
+  text-transform: uppercase; letter-spacing: var(--tracking-wider);
+  border-radius: var(--radius-button); transition: color .15s, background-color .15s;
+}
+.btn-outline:hover { background: var(--ink); color: var(--background); }
+.btn-outline .icon { width: .75rem; height: .75rem; }
+.paper-link { margin-block: 1.5rem; }
+
+/* ==========================================================================
+   TOC SIDEBAR  —  hidden xl:block w-56 shrink-0 · sticky top-20
+   Active state: border-ink text-ink · h2 → pl-3, h3 → pl-5
+   ========================================================================== */
+.toc { display: none; width: 14rem; flex-shrink: 0; }
+@media (min-width: 1280px) { .toc { display: block; } }
+.toc__sticky { position: sticky; top: 5rem; }
+.toc__label {
+  display: block; margin-bottom: .75rem; font-size: var(--text-xs);
+  color: var(--ink-faint); text-transform: uppercase; letter-spacing: var(--tracking-widest);
+}
+.toc nav > a { display: block; }
+.toc nav > a + a { margin-top: .25rem; }
+.toc a {
+  font-size: var(--text-xs); line-height: var(--leading-relaxed);
+  padding-block: .25rem; border-left: 2px solid transparent;
+  color: var(--ink-faint); transition: color .15s, border-color .15s;
+}
+.toc a[data-level="2"] { padding-left: .75rem; }  /* pl-3 */
+.toc a[data-level="3"] { padding-left: 1.25rem; } /* pl-5 */
+.toc a:hover { color: var(--neutral-600); border-left-color: var(--neutral-300); }
+.toc a[aria-current="true"] { color: var(--ink); border-left-color: var(--ink); }
+
+/* ==========================================================================
+   POST FOOTER + SITE FOOTER
+   ========================================================================== */
+.post-footer { border-top: 1px solid var(--neutral-200); }
+.post-footer__inner { padding-block: 2rem; }
+
+.site-footer { width: 100%; border-top: 1px solid var(--hairline); background: var(--background); }
+.site-footer__newsletter {
+  padding-block: 2rem; border-bottom: 1px solid var(--neutral-200);
+  display: flex; flex-direction: column; align-items: flex-start;
+  justify-content: space-between; gap: 1rem;
+}
+@media (min-width: 640px) { .site-footer__newsletter { flex-direction: row; align-items: center; } }
+.newsletter__copy { text-align: left; }
+.newsletter__title {
+  font-size: var(--text-sm); font-weight: 500; color: var(--ink);
+  text-transform: uppercase; letter-spacing: var(--tracking-wider); margin-bottom: .25rem;
+}
+.newsletter__copy:hover .newsletter__title { text-decoration: underline; text-underline-offset: 2px; }
+.newsletter__sub { font-size: var(--text-xs); color: var(--neutral-600); }
+
+.site-footer__legal {
+  padding-block: 1.5rem; display: flex; flex-direction: column;
+  align-items: center; justify-content: space-between; gap: 1rem;
+}
+@media (min-width: 640px) { .site-footer__legal { flex-direction: row; } }
+.site-footer__legal p { font-size: var(--text-xs); color: var(--neutral-600); }
+.site-footer__legal p a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+.site-footer__links { display: flex; align-items: center; gap: 1rem; }
+.site-footer__links a { font-size: var(--text-xs); color: var(--neutral-600); transition: color .15s; }
+.site-footer__links a:hover { color: var(--ink); }
+
+/* ==========================================================================
+   LIGHTBOX  —  the site opens images in a Radix dialog
+   ========================================================================== */
+.lightbox {
+  position: fixed; inset: 0; z-index: 50; display: none;
+  align-items: center; justify-content: center; padding: 2rem;
+  background: rgb(0 0 0 / .8); cursor: zoom-out;
+}
+.lightbox[data-open="true"] { display: flex; }
+.lightbox img { max-width: 100%; max-height: 100%; width: auto; height: auto; }
+.lightbox__close {
+  position: absolute; top: 1.5rem; right: 1.5rem;
+  color: #fff; padding: .5rem;
+}
+.lightbox__close .icon { width: 1.5rem; height: 1.5rem; }
+
+
+
+/* ==========================================================================
+   FIGURE 1 — WHAT EACH VERIFIER CAN SEE (interactive · context-window story)
+   Source/sandbox: figures/fig1-verifier-access.html (keep in sync).
+   Evidence sources on top (trajectory strip + state chips); a context-window
+   bar fills via flying items. Sauron peeks and picks only relevant events;
+   text-based judges can load the full trace and visibly overload.
+   Accents validated (dataviz validate_palette.js):
+     light #3e7a45 / #c2410c · dark #57a860 / #b9542e — all checks pass.
+   ========================================================================== */
+:root {
+  --acc-green: #3e7a45;
+  --acc-green-soft: color-mix(in srgb, #3e7a45 10%, transparent);
+  --acc-orange: #c2410c;
+  --acc-orange-soft: color-mix(in srgb, #c2410c 8%, transparent);
+}
+[data-mode="dark"] {
+  --acc-green: #57a860;
+  --acc-green-soft: color-mix(in srgb, #57a860 16%, transparent);
+  --acc-orange: #b9542e;
+  --acc-orange-soft: color-mix(in srgb, #b9542e 14%, transparent);
+}
+
+.fig-verifier-access { margin-block: 2rem; }
+.fig-verifier-access .fig-title {
+  margin-bottom: .25rem; font-size: var(--text-sm); font-weight: 500;
+  color: var(--ink); text-transform: uppercase; letter-spacing: var(--tracking-wide);
+}
+.fig-verifier-access .fig-desc {
+  margin-bottom: .875rem; font-size: var(--text-xs);
+  color: var(--ink-faint); line-height: var(--leading-relaxed);
+}
+.fig-verifier-access button { font: inherit; color: inherit; background: none; cursor: pointer; }
+.fig-verifier-access :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* ---------- controls row ---------- */
+.va-controls { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-bottom: .75rem; align-items: center; }
+.va-controls .t-label { font-size: 10px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: var(--tracking-wider); }
+.va-seg { display: inline-flex; border: 1px solid var(--hairline); }
+.va-seg button {
+  font-size: 10px; padding: .3rem .625rem; color: var(--neutral-600);
+  text-transform: uppercase; letter-spacing: var(--tracking-wider);
+  transition: color .15s, background-color .15s, opacity .15s;
+}
+.va-seg button + button { border-left: 1px solid var(--hairline); }
+.va-seg button[aria-pressed="true"] { background: var(--ink); color: var(--background); }
+.va-seg button:disabled { opacity: .35; cursor: not-allowed; }
+.va-replay {
+  font-size: 10px; color: var(--ink-faint); border: 1px solid var(--hairline);
+  padding: .3rem .625rem; text-transform: uppercase; letter-spacing: var(--tracking-wider);
+  margin-left: auto;
+}
+.va-replay:hover { color: var(--ink); border-color: var(--ink); }
+
+.va-stage { position: relative; }
+@media (max-width: 560px) { .evidence-row { flex-direction: column; } }
+
+/* ---------- evidence row ---------- */
+.evidence-row { display: flex; gap: .75rem; }
+.evidence {
+  border: 1px solid var(--hairline); background: var(--neutral-50);
+  padding: .55rem .65rem .65rem;
+  transition: border-color .15s, opacity .15s;
+}
+.evidence .ev-label {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+  gap: .25rem .5rem; font-size: 10px; color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: var(--tracking-wider);
+  margin-bottom: .5rem;
+}
+.evidence .ev-sub { color: var(--neutral-400); text-transform: none; letter-spacing: 0; }
+.ev-trace { flex: 2.2; min-width: 0; position: relative; }
+.ev-state { flex: 1; min-width: 0; position: relative; padding-bottom: 1.9rem; }
+
+/* trajectory strip */
+.trace-strip {
+  display: flex; align-items: flex-end; gap: 2px;
+  height: 46px; padding: 4px 4px 6px; overflow: hidden;
+  border-bottom: 1px solid var(--neutral-200);
+  position: relative;
+}
+.tick { flex: 1; min-width: 2px; max-width: 7px; background: var(--neutral-300); transition: background-color .2s, opacity .2s, box-shadow .2s; }
+.tick.t-tool { height: 78%; background: var(--neutral-400); }
+.tick.t-msg  { height: 42%; }
+.tick.t-final { height: 100%; max-width: 9px; background: var(--acc-orange); margin-left: 6px; }
+.tick.is-picked { background: var(--acc-green); box-shadow: 0 0 0 2px var(--acc-green-soft); }
+.tick.is-carried { opacity: .25; }   /* swept away into a text-judge's context */
+
+/* Sauron's scan window sweeping the strip */
+.va-scan {
+  position: absolute; top: 0; bottom: 4px; width: 34px;
+  background: var(--acc-green-soft); border: 1px solid var(--acc-green);
+  opacity: 0; pointer-events: none;
+  transition: left .32s cubic-bezier(.4,.2,.2,1), opacity .2s;
+}
+.va-scan.on { opacity: 1; }
+
+.trace-legend {
+  display: flex; gap: .75rem; margin-top: .4rem;
+  font-size: 9.5px; color: var(--ink-faint); flex-wrap: wrap;
+}
+.trace-legend .key { display: inline-flex; align-items: center; gap: .3rem; }
+.trace-legend .swatch { width: 4px; height: 12px; background: var(--neutral-400); display: inline-block; }
+.trace-legend .swatch.s-msg { height: 7px; background: var(--neutral-300); }
+.trace-legend .swatch.s-final { height: 14px; width: 5px; background: var(--acc-orange); }
+
+/* state & artifacts */
+.artifact-grid { display: flex; flex-wrap: wrap; gap: .3rem; align-content: flex-start; }
+.artifact {
+  font-size: 9.5px; letter-spacing: var(--tracking-wider);
+  color: var(--neutral-600); border: 1px solid var(--neutral-300);
+  padding: .22rem .4rem; transition: border-color .2s, color .2s, box-shadow .2s, opacity .2s;
+}
+.artifact.is-picked { border-color: var(--acc-green); color: var(--ink); box-shadow: 0 0 0 2px var(--acc-green-soft); }
+.artifact.is-picked.is-irr { border-color: #d9762b; box-shadow: 0 0 0 2px color-mix(in srgb, #d9762b 16%, transparent); }
+.diff-badge {
+  display: none; font-size: 9px; color: var(--ink);
+  border: 1px dashed var(--ink-faint); padding: .08rem .35rem;
+  letter-spacing: var(--tracking-wider);
+  position: absolute; bottom: .4rem; right: .55rem; background: var(--neutral-50);
+}
+.va-stage.show-diff .diff-badge { display: inline-block; }
+
+/* ---------- context window ---------- */
+.va-context {
+  margin-top: .75rem;
+  border: 1px solid var(--ink); background: var(--background);
+  transition: border-color .25s, background-color .25s;
+}
+.va-context.overload { border-color: var(--acc-orange); border-style: dashed; background: var(--acc-orange-soft); }
+.va-context .ctx-head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: .5rem;
+  padding: .35rem .6rem 0;
+  font-size: 9.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: var(--tracking-wider);
+}
+.va-context .ctx-count { text-transform: none; letter-spacing: .3px; transition: color .25s; }
+.va-context.overload .ctx-count { color: var(--acc-orange); font-weight: 700; }
+.ctx-slots {
+  display: flex; align-items: flex-end; gap: 2px; flex-wrap: nowrap;
+  height: 34px; padding: .3rem .6rem .45rem; overflow: hidden;
+}
+.ctx-item { width: 7px; height: 16px; flex-shrink: 1; min-width: 2px; }
+.ctx-item.c-tool { height: 22px; }          /* tool call — tall, like the strip */
+.ctx-item.c-msg { height: 12px; }           /* message — short, like the strip */
+.ctx-item.c-rel { background: var(--acc-green); }
+.ctx-item.c-irr { background: var(--neutral-300); }
+.ctx-item.c-final { background: var(--acc-orange); height: 24px; width: 8px; }
+.ctx-item.c-state { background: var(--ink-dim); height: 12px; width: 10px; }
+.ctx-item.c-diff { background: transparent; border: 1px dashed var(--ink-faint); height: 12px; width: 10px; }
+.ctx-item.c-wide { width: 84px; flex-shrink: 0; height: 16px; }   /* a diff can be big */
+.ctx-legend {
+  display: flex; gap: .75rem; flex-wrap: wrap;
+  padding: 0 .6rem .4rem; font-size: 9px; color: var(--ink-faint); letter-spacing: .3px;
+}
+.ctx-legend .key { display: inline-flex; align-items: center; gap: .3rem; }
+.ctx-legend .ctx-item { flex-shrink: 0; }
+
+/* flying clones */
+.va-fly {
+  position: absolute; z-index: 6; pointer-events: none;
+  transition: transform .5s cubic-bezier(.3,.6,.25,1), opacity .5s;
+}
+
+/* ---------- verifier cards ---------- */
+.verifier-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: .6rem; margin-top: .75rem; }
+@media (max-width: 620px) { .verifier-row { grid-template-columns: repeat(2, 1fr); } }
+.verifier {
+  text-align: left; border: 1px solid var(--hairline); background: var(--neutral-50);
+  padding: .5rem .625rem; transition: border-color .15s, background-color .15s, opacity .15s;
+}
+.verifier:hover { border-color: var(--neutral-400); }
+.verifier.is-dim:hover { opacity: 1; }
+.verifier.v-sauron:hover { border-color: var(--acc-green); background: var(--acc-green-soft); }
+.verifier.v-gandalf:hover, .verifier.v-gandalf[aria-pressed="true"] { border-color: var(--v-gandalf); background: color-mix(in srgb, var(--v-gandalf) 10%, transparent); }
+.verifier.v-archipelago:hover, .verifier.v-archipelago[aria-pressed="true"] { border-color: var(--v-archipelago); background: color-mix(in srgb, var(--v-archipelago) 10%, transparent); }
+.verifier.v-autorubric:hover, .verifier.v-autorubric[aria-pressed="true"] { border-color: var(--v-autorubric); background: color-mix(in srgb, var(--v-autorubric) 10%, transparent); }
+.verifier[aria-pressed="true"] { border-color: var(--ink); }
+.verifier.is-dim { opacity: .45; }
+.verifier .v-name {
+  font-size: var(--text-xs); font-weight: 700; color: var(--ink);
+  text-transform: uppercase; letter-spacing: var(--tracking-wide);
+  display: flex; align-items: center; gap: .4rem;
+}
+.verifier .v-dot { width: 8px; height: 8px; background: var(--neutral-400); flex-shrink: 0; }
+.fig-verifier-access { --v-gandalf: #4f3ac2; --v-archipelago: #9a6b21; --v-autorubric: #3f6cc4; }
+[data-mode="dark"] .fig-verifier-access { --v-gandalf: #6f55d6; --v-archipelago: #a87d2f; --v-autorubric: #5C8DE5; }
+.verifier.v-sauron .v-dot { background: var(--acc-green); }
+.verifier.v-gandalf .v-dot { background: var(--v-gandalf); }
+.verifier.v-archipelago .v-dot { background: var(--v-archipelago); }
+.verifier.v-autorubric .v-dot { background: var(--v-autorubric); }
+.verifier .v-mode {
+  margin-top: .3rem; font-size: 9.5px; color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: var(--tracking-wider);
+}
+.verifier.v-sauron[aria-pressed="true"] { border-color: var(--acc-green); background: var(--acc-green-soft); }
+
+/* ---------- readout ---------- */
+.fig-readout {
+  margin-top: .75rem; min-height: 4.9em;
+  font-size: var(--text-xs); color: var(--neutral-600); line-height: var(--leading-relaxed);
+}
+.fig-readout strong { color: var(--ink); font-weight: 700; }
+
+/* ==========================================================================
+   FIGURE 2 — QUALITY VS. COST (interactive, animated)
+   Source/sandbox: figures/fig2-results-frontier.html (keep in sync).
+   Linear x $0–$300 with an axis break; Archipelago beyond it at ~$8.1k.
+   Palette validated (dataviz validate_palette.js) — identity carried by
+   shape + direct label, never color alone.
+   DATA NOTE: uses the 2026-09-10 results table (2,586 criteria / 100 tasks, eight backbones);
+   supersedes the §4 prose numbers pending the number pass.
+   ========================================================================== */
+:root {
+  --c-autorubric: #3f6cc4;
+  --c-aaaj: #b0509e;
+  --c-sauron: #3e7a45;
+  --c-gandalf: #4f3ac2;
+  --c-archipelago: #9a6b21;
+}
+[data-mode="dark"] {
+  --c-autorubric: #5C8DE5;
+  --c-aaaj: #c360ae;
+  --c-sauron: #57a860;
+  --c-gandalf: #6f55d6;
+  --c-archipelago: #a87d2f;
+}
+
+.fig-results-frontier { margin-block: 2rem; }
+.fig-results-frontier .fig-title {
+  margin-bottom: .25rem; font-size: var(--text-sm); font-weight: 500;
+  color: var(--ink); text-transform: uppercase; letter-spacing: var(--tracking-wide);
+}
+.fig-results-frontier .fig-desc {
+  margin-bottom: .875rem; font-size: var(--text-xs);
+  color: var(--ink-faint); line-height: var(--leading-relaxed);
+}
+.fig-results-frontier button { font: inherit; color: inherit; background: none; cursor: pointer; }
+.fig-results-frontier :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* legend chips — hover to highlight the matching dot */
+.fr-legend { display: flex; flex-wrap: wrap; gap: .375rem .5rem; margin-bottom: .75rem; }
+.fr-chip {
+  display: inline-flex; align-items: center; gap: .28rem;
+  font-size: 8px; color: var(--neutral-600);
+  border: 1px solid var(--hairline); padding: .12rem .35rem;
+  text-transform: uppercase; letter-spacing: var(--tracking-wider);
+  transition: border-color .15s, color .15s, opacity .15s;
+}
+.fr-chip:hover, .fr-chip.is-active { border-color: var(--ink); color: var(--ink); }
+.fr-chip.is-dim { opacity: .4; }
+.fr-chip svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+.fr-plot-wrap { position: relative; }
+.fr-plot { display: block; width: 100%; height: auto; }
+
+/* chart chrome */
+.fr-grid { stroke: var(--neutral-200); stroke-width: 1; }
+.fr-axis { stroke: var(--hairline); stroke-width: 1; }
+.fr-tick-label, .fr-axis-title { fill: var(--ink-faint); font-family: var(--font-mono); }
+.fr-tick-label { font-size: 9.5px; }
+.fr-axis-title { font-size: 10px; letter-spacing: .5px; }
+.fr-hint { fill: var(--neutral-400); font-size: 9.5px; font-family: var(--font-mono); letter-spacing: .5px; }
+
+/* marks */
+.fr-dot { transition: opacity .15s; }
+.fr-dot .mark { stroke: var(--background); stroke-width: 2; }        /* 2px surface ring */
+.fr-dot .halo { fill: transparent; }                                  /* oversize hit target */
+.fr-dot .dlabel { font-family: var(--font-mono); font-size: 10px; fill: var(--ink-dim); letter-spacing: .3px; }
+.fr-dot.d-sauron .dlabel { fill: var(--ink); font-weight: 700; }
+.fr-dot.is-dim { opacity: .25; }
+
+/* entrance animation: dots pop, labels fade */
+.fr-dot .fly { }
+.fig-armed .fr-dot .fly { transform: translateX(var(--flyd, 0px)); }
+.fig-play .fr-dot .fly {
+  transform: translateX(var(--flyd, 0px));
+  animation: fr-fly .9s cubic-bezier(.3, .6, .2, 1) forwards;
+  animation-delay: var(--d, 0s);
+}
+@keyframes fr-fly { to { transform: translateX(0); } }
+.fr-dot .pop { transform-origin: center; transform-box: fill-box; }
+.fig-armed .fr-dot .pop { transform: scale(0); }
+.fig-play .fr-dot .pop {
+  animation: fr-pop .45s cubic-bezier(.2, 1.4, .4, 1) forwards;
+  animation-delay: var(--d, 0s);
+}
+.fig-armed .fr-dot .dlabel { opacity: 0; }
+.fig-play .fr-dot .dlabel {
+  animation: fr-fade .3s ease-out forwards;
+  animation-delay: calc(var(--d, 0s) + .18s);
+}
+@keyframes fr-pop { to { transform: scale(1); } }
+@keyframes fr-fade { to { opacity: 1; } }
+
+/* crosshair */
+.fr-cross line { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 3 3; }
+.fr-pareto { fill: none; stroke: var(--ink-faint); stroke-width: 1.2; stroke-dasharray: 5 4; }
+.fig-armed .fr-pareto, .fig-armed .fr-pareto-label { opacity: 0; }
+.fig-play .fr-pareto { animation: fr-reveal .9s ease-out both; animation-delay: var(--pd, 0s); }
+.fig-play .fr-pareto-label { animation: fr-fade .4s ease-out both; animation-delay: calc(var(--pd, 0s) + .8s); }
+@keyframes fr-reveal { from { clip-path: inset(0 100% 0 0); opacity: 1; } to { clip-path: inset(0 0 0 0); opacity: 1; } }
+@keyframes fr-fade { from { opacity: 0; } to { opacity: 1; } }
+/* backbone selector: one column per vendor, under the plot */
+.fr-backbones { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem 1rem; margin-top: .75rem; padding-top: .6rem; border-top: 1px solid var(--hairline); }
+.fr-vendor { display: flex; flex-direction: column; gap: .25rem; }
+.fr-vendor__name { font-size: 8px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: var(--tracking-widest); font-family: var(--font-mono); margin-bottom: .1rem; }
+.fr-chip--b { border: 0; padding: .1rem 0; justify-content: flex-start; text-transform: none; letter-spacing: 0; font-size: 10px; }
+.fr-chip--b:hover, .fr-chip--b.is-active { color: var(--ink); }
+.fr-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+@media (max-width: 480px) { .fr-backbones { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.fr-cross { opacity: 0; transition: opacity .12s; pointer-events: none; }
+.fr-cross.on { opacity: 1; }
+
+/* tooltip */
+.fr-tip {
+  position: absolute; z-index: 5; pointer-events: none;
+  border: 1px solid var(--ink); background: var(--background);
+  padding: .5rem .625rem; min-width: 150px;
+  opacity: 0; transition: opacity .12s;
+}
+.fr-tip.on { opacity: 1; }
+.fr-tip .t-name { font-size: 10px; font-weight: 700; color: var(--ink); text-transform: uppercase; letter-spacing: var(--tracking-wider); margin-bottom: .3rem; display: flex; align-items: center; gap: .35rem; }
+.fr-tip .t-swatch { width: 8px; height: 8px; display: inline-block; }
+.fr-tip .t-row { display: flex; justify-content: space-between; gap: .875rem; font-size: 10px; color: var(--neutral-600); line-height: 1.7; }
+.fr-tip .t-row b { color: var(--ink); font-weight: 700; }
+
+/* replay */
+.fr-replay {
+  position: absolute; top: 0; right: 0;
+  font-size: 10px; color: var(--ink-faint); border: 1px solid var(--hairline);
+  padding: .2rem .5rem; text-transform: uppercase; letter-spacing: var(--tracking-wider);
+  opacity: 0; transition: opacity .2s, color .15s, border-color .15s;
+}
+.fr-replay.on { opacity: 1; }
+.fr-replay:hover { color: var(--ink); border-color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .fig-armed .fr-dot .pop, .fig-play .fr-dot .pop { transform: scale(1); animation: none; }
+  .fig-armed .fr-dot .fly, .fig-play .fr-dot .fly { transform: none; animation: none; }
+  .fig-armed .fr-dot .dlabel, .fig-play .fr-dot .dlabel { opacity: 1; animation: none; }
+}
+
+/* ==========================================================================
+   FIGURE 3 — PROCESS CRITERIA (411-criterion probe, animated bars)
+   Source/sandbox: figures/fig3-process-criteria.html (keep in sync).
+   Entity palette shared with figure 2 (Gandalf purple re-stepped so the
+   purple↔magenta bar adjacency clears the normal-vision floor; both
+   figures' orders re-validated in both modes).
+   Data matches the §4a prose exactly (411 criteria, GPT-5.6 Sol).
+   ========================================================================== */
+.fig-process-bars { margin-block: 2rem; }
+.fig-process-bars .fig-title {
+  margin-bottom: .25rem; font-size: var(--text-sm); font-weight: 500;
+  color: var(--ink); text-transform: uppercase; letter-spacing: var(--tracking-wide);
+}
+.fig-process-bars .fig-desc {
+  margin-bottom: .875rem; font-size: var(--text-xs);
+  color: var(--ink-faint); line-height: var(--leading-relaxed);
+}
+.fig-process-bars button { font: inherit; color: inherit; background: none; cursor: pointer; }
+.fig-process-bars :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.pb-plot-wrap { position: relative; }
+.pb-plot { display: block; width: 100%; height: auto; }
+
+.pb-grid { stroke: var(--neutral-200); stroke-width: 1; }
+.pb-axis { stroke: var(--hairline); stroke-width: 1; }
+.pb-tick-label, .pb-axis-title { fill: var(--ink-faint); font-family: var(--font-mono); }
+.pb-tick-label { font-size: 9.5px; }
+.pb-axis-title { font-size: 10px; letter-spacing: .5px; }
+
+/* rows */
+.pb-row { transition: opacity .15s; }
+.pb-row.is-dim { opacity: .3; }
+.pb-row .rlabel { font-family: var(--font-mono); font-size: 10.5px; fill: var(--ink-dim); letter-spacing: .3px; }
+.pb-row.r-sauron .rlabel { fill: var(--ink); font-weight: 700; }
+.pb-row .vlabel { font-family: var(--font-mono); font-size: 10.5px; fill: var(--ink-dim); letter-spacing: .3px; }
+.pb-row.r-sauron .vlabel { fill: var(--ink); font-weight: 700; }
+.pb-row .hit { fill: transparent; }
+
+/* entrance: bars grow from the baseline, value labels fade in after */
+.pb-row .bar { transform-origin: left center; transform-box: fill-box; }
+.fig-armed .pb-row .bar { transform: scaleX(0); }
+.fig-play .pb-row .bar {
+  animation: pb-grow .6s cubic-bezier(.25, .9, .3, 1) forwards;
+  animation-delay: var(--d, 0s);
+}
+.fig-armed .pb-row .vlabel { opacity: 0; }
+.fig-play .pb-row .vlabel {
+  animation: pb-fade .25s ease-out forwards;
+  animation-delay: calc(var(--d, 0s) + .45s);
+}
+@keyframes pb-grow { to { transform: scaleX(1); } }
+@keyframes pb-fade { to { opacity: 1; } }
+
+/* tooltip */
+.pb-tip {
+  position: absolute; z-index: 5; pointer-events: none;
+  border: 1px solid var(--ink); background: var(--background);
+  padding: .5rem .625rem; min-width: 130px;
+  opacity: 0; transition: opacity .12s;
+}
+.pb-tip.on { opacity: 1; }
+.pb-tip .t-name { font-size: 10px; font-weight: 700; color: var(--ink); text-transform: uppercase; letter-spacing: var(--tracking-wider); margin-bottom: .3rem; display: flex; align-items: center; gap: .35rem; }
+.pb-tip .t-swatch { width: 8px; height: 8px; display: inline-block; }
+.pb-tip .t-row { display: flex; justify-content: space-between; gap: .875rem; font-size: 10px; color: var(--neutral-600); line-height: 1.7; }
+.pb-tip .t-row b { color: var(--ink); font-weight: 700; }
+
+/* replay */
+.pb-replay {
+  position: absolute; top: -28px; right: 0;   /* above the plot — Sauron's bar runs nearly full width */
+  font-size: 10px; color: var(--ink-faint); border: 1px solid var(--hairline);
+  padding: .2rem .5rem; text-transform: uppercase; letter-spacing: var(--tracking-wider);
+  opacity: 0; transition: opacity .2s, color .15s, border-color .15s;
+}
+.pb-replay.on { opacity: 1; }
+.pb-replay:hover { color: var(--ink); border-color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .fig-armed .pb-row .bar, .fig-play .pb-row .bar { transform: scaleX(1); animation: none; }
+  .fig-armed .pb-row .vlabel, .fig-play .pb-row .vlabel { opacity: 1; animation: none; }
+}
+
+/* ==========================================================================
+   FIGURE 4 — ACCESS TO EVIDENCE (fault-injection MCC dot plot)
+   Source/sandbox: figures/fig4-access-tiers.html (keep in sync).
+   Encoding: hue = access tier (green / ink / hollow-faint), shape = entity
+   (consistent with figure 2). Entity hues would sit blue↔purple adjacent
+   here and hard-fail the normal-vision floor in both modes — tier encoding
+   sidesteps that and argues the section's point directly.
+   Archipelago excluded per direction. Annotation ratio 3.3× (list costs
+   $654/$198); §5 prose still says 3.5× — number pass.
+   ========================================================================== */
+.fig-access-tiers { margin-block: 2rem; }
+.fig-access-tiers .fig-title {
+  margin-bottom: .25rem; font-size: var(--text-sm); font-weight: 500;
+  color: var(--ink); text-transform: uppercase; letter-spacing: var(--tracking-wide);
+}
+.fig-access-tiers .fig-desc {
+  margin-bottom: .875rem; font-size: var(--text-xs);
+  color: var(--ink-faint); line-height: var(--leading-relaxed);
+}
+.fig-access-tiers button { font: inherit; color: inherit; background: none; cursor: pointer; }
+.fig-access-tiers :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.at-plot-wrap { position: relative; }
+.at-plot { display: block; width: 100%; height: auto; }
+
+.at-grid { stroke: var(--neutral-200); stroke-width: 1; }
+.at-axis { stroke: var(--hairline); stroke-width: 1; }
+.at-sep { stroke: var(--neutral-200); stroke-width: 1; }
+.at-tick-label, .at-axis-title { fill: var(--ink-faint); font-family: var(--font-mono); }
+.at-tick-label { font-size: 9.5px; }
+.at-axis-title { font-size: 10px; letter-spacing: .5px; }
+.at-group { fill: var(--ink-faint); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 1px; }
+
+/* rows */
+.at-row { transition: opacity .15s; }
+.at-row.is-dim { opacity: .3; }
+.at-row .rlabel { font-family: var(--font-mono); font-size: 10.5px; fill: var(--ink-dim); letter-spacing: .3px; }
+.at-row.r-sauron .rlabel { fill: var(--ink); font-weight: 700; }
+.at-row .vlabel { font-family: var(--font-mono); font-size: 10.5px; fill: var(--ink-dim); letter-spacing: .3px; }
+.at-row.r-sauron .vlabel { fill: var(--ink); font-weight: 700; }
+.at-row .hit { fill: transparent; }
+.at-anno { fill: var(--ink-faint); font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .4px; }
+
+/* marks: filled with the entity color; the trajectory-blind defaults are
+   hollow — outline only (also stated in the figure description) */
+.at-row .mark { stroke: var(--background); stroke-width: 2; }
+.at-row.t-blind .mark { fill: none !important; stroke-width: 2.5; }
+
+/* entrance: dots pop, labels fade */
+.at-row .pop { transform-origin: center; transform-box: fill-box; }
+.fig-armed .at-row .pop { transform: scale(0); }
+.fig-play .at-row .pop {
+  animation: at-pop .45s cubic-bezier(.2, 1.4, .4, 1) forwards;
+  animation-delay: var(--d, 0s);
+}
+.fig-armed .at-row .vlabel, .fig-armed .at-anno { opacity: 0; }
+.fig-play .at-row .vlabel {
+  animation: at-fade .3s ease-out forwards;
+  animation-delay: calc(var(--d, 0s) + .18s);
+}
+.fig-play .at-anno {
+  animation: at-fade .3s ease-out forwards;
+  animation-delay: var(--anno-d, 1.6s);
+}
+@keyframes at-pop { to { transform: scale(1); } }
+@keyframes at-fade { to { opacity: 1; } }
+
+/* tooltip */
+.at-tip {
+  position: absolute; z-index: 5; pointer-events: none;
+  border: 1px solid var(--ink); background: var(--background);
+  padding: .5rem .625rem; min-width: 130px;
+  opacity: 0; transition: opacity .12s;
+}
+.at-tip.on { opacity: 1; }
+.at-tip .t-name { font-size: 10px; font-weight: 700; color: var(--ink); text-transform: uppercase; letter-spacing: var(--tracking-wider); margin-bottom: .3rem; }
+.at-tip .t-sub { font-size: 9px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: var(--tracking-wider); margin: -0.2rem 0 .3rem; }
+.at-tip .t-row { display: flex; justify-content: space-between; gap: .875rem; font-size: 10px; color: var(--neutral-600); line-height: 1.7; }
+.at-tip .t-row b { color: var(--ink); font-weight: 700; }
+
+/* replay */
+.at-replay {
+  position: absolute; top: -28px; right: 0;
+  font-size: 10px; color: var(--ink-faint); border: 1px solid var(--hairline);
+  padding: .2rem .5rem; text-transform: uppercase; letter-spacing: var(--tracking-wider);
+  opacity: 0; transition: opacity .2s, color .15s, border-color .15s;
+}
+.at-replay.on { opacity: 1; }
+.at-replay:hover { color: var(--ink); border-color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .fig-armed .at-row .pop, .fig-play .at-row .pop { transform: scale(1); animation: none; }
+  .fig-armed .at-row .vlabel, .fig-play .at-row .vlabel,
+  .fig-armed .at-anno, .fig-play .at-anno { opacity: 1; animation: none; }
+}
+
+/* ==========================================================================
+   FIGURE 5 — QUALITY–TIME FRONTIER (§6, "Figure W" in the copy)
+   Source/sandbox: figures/fig5-frontier.html (keep in sync).
+   F1 vs measured wall-clock, 221 criteria / 10 tasks, shipped defaults;
+   linear 0–30 min with an axis break, AAAJ beyond it at 72. Six arms
+   (Archipelago excluded; projection framing removed per direction).
+   Dashed intra-entity connectors trace each system's batching knob.
+   NUMBER-PASS NOTE: §6 prose quotes dollars ($26.13 / $53.96 / ~$313);
+   figure axis is wall-clock with study dollars in tooltips
+   ($14.00 / $27.02 / $17.54 / $158 / $3.73 / $10.59) — sync in the
+   number pass. F1 values agree with prose.
+   ========================================================================== */
+.fig-frontier { margin-block: 2rem; }
+.fig-frontier .fig-title {
+  margin-bottom: .25rem; font-size: var(--text-sm); font-weight: 500;
+  color: var(--ink); text-transform: uppercase; letter-spacing: var(--tracking-wide);
+}
+.fig-frontier .fig-desc {
+  margin-bottom: .875rem; font-size: var(--text-xs);
+  color: var(--ink-faint); line-height: var(--leading-relaxed);
+}
+.fig-frontier button { font: inherit; color: inherit; background: none; cursor: pointer; }
+.fig-frontier :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.qf-plot-wrap { position: relative; }
+.qf-plot { display: block; width: 100%; height: auto; }
+
+.qf-grid { stroke: var(--neutral-200); stroke-width: 1; }
+.qf-axis { stroke: var(--hairline); stroke-width: 1; }
+.qf-tick-label, .qf-axis-title { fill: var(--ink-faint); font-family: var(--font-mono); }
+.qf-tick-label { font-size: 9.5px; }
+.qf-axis-title { font-size: 10px; letter-spacing: .5px; }
+.qf-hint { fill: var(--neutral-400); font-size: 9.5px; font-family: var(--font-mono); letter-spacing: .5px; }
+
+/* points */
+.qf-dot { transition: opacity .15s; }
+.qf-dot.is-dim { opacity: .25; }
+.qf-dot .mark { stroke: var(--background); stroke-width: 2; }
+.qf-dot .dlabel { font-family: var(--font-mono); font-size: 10px; fill: var(--ink-dim); letter-spacing: .3px; }
+.qf-dot.e-sauron .dlabel { fill: var(--ink); font-weight: 700; }
+.qf-dot .halo { fill: transparent; }
+
+/* intra-entity connectors (the batching knob) */
+.qf-link { fill: none; stroke-width: 1.5; stroke-dasharray: 4 4; opacity: 0; }
+.fig-play .qf-link { animation: qf-fade-half .4s ease-out forwards; animation-delay: var(--link-d, 1.8s); }
+
+/* entrance */
+.fig-armed .qf-dot .fly { transform: translateX(var(--flyd, 0px)); }
+.fig-play .qf-dot .fly {
+  transform: translateX(var(--flyd, 0px));
+  animation: qf-fly .9s cubic-bezier(.3, .6, .2, 1) forwards;
+  animation-delay: var(--d, 0s);
+}
+@keyframes qf-fly { to { transform: translateX(0); } }
+.qf-dot .pop { transform-origin: center; transform-box: fill-box; }
+.fig-armed .qf-dot .pop { transform: scale(0); }
+.fig-play .qf-dot .pop {
+  animation: qf-pop .45s cubic-bezier(.2, 1.4, .4, 1) forwards;
+  animation-delay: var(--d, 0s);
+}
+.fig-armed .qf-dot .dlabel { opacity: 0; }
+.fig-play .qf-dot .dlabel {
+  animation: qf-fade .3s ease-out forwards;
+  animation-delay: calc(var(--d, 0s) + .18s);
+}
+@keyframes qf-pop { to { transform: scale(1); } }
+@keyframes qf-fade { to { opacity: 1; } }
+@keyframes qf-fade-half { to { opacity: .5; } }
+
+/* crosshair */
+.qf-cross line { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 3 3; }
+.qf-cross { opacity: 0; transition: opacity .12s; pointer-events: none; }
+.qf-cross.on { opacity: 1; }
+
+/* tooltip */
+.qf-tip {
+  position: absolute; z-index: 5; pointer-events: none;
+  border: 1px solid var(--ink); background: var(--background);
+  padding: .5rem .625rem; min-width: 170px;
+  opacity: 0; transition: opacity .12s;
+}
+.qf-tip.on { opacity: 1; }
+.qf-tip .t-name { font-size: 10px; font-weight: 700; color: var(--ink); text-transform: uppercase; letter-spacing: var(--tracking-wider); margin-bottom: .3rem; display: flex; align-items: center; gap: .35rem; }
+.qf-tip .t-swatch { width: 8px; height: 8px; display: inline-block; }
+.qf-tip .t-row { display: flex; justify-content: space-between; gap: .875rem; font-size: 10px; color: var(--neutral-600); line-height: 1.7; }
+.qf-tip .t-row b { color: var(--ink); font-weight: 700; }
+
+/* replay */
+.qf-replay {
+  position: absolute; top: -28px; right: 0;
+  font-size: 10px; color: var(--ink-faint); border: 1px solid var(--hairline);
+  padding: .2rem .5rem; text-transform: uppercase; letter-spacing: var(--tracking-wider);
+  opacity: 0; transition: opacity .2s, color .15s, border-color .15s;
+}
+.qf-replay.on { opacity: 1; }
+.qf-replay:hover { color: var(--ink); border-color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .fig-armed .qf-dot .pop, .fig-play .qf-dot .pop { transform: scale(1); animation: none; }
+  .fig-armed .qf-dot .fly, .fig-play .qf-dot .fly { transform: none; animation: none; }
+  .fig-armed .qf-dot .dlabel, .fig-play .qf-dot .dlabel { opacity: 1; animation: none; }
+  .qf-link, .fig-play .qf-link { opacity: .5; animation: none; }
+}
+
+/* ==========================================================================
+   FIGURE 6 — SPEED UNDER CONCURRENCY (§6)
+   Source/sandbox: figures/fig6-concurrency.html (keep in sync).
+   Two lines, log-y (vertical distance = ratio, so the saturation gap
+   stays visibly open), log2-spaced workers, dashed gap rulers labeled
+   with the multiplier at every level (2.5x/1.4x/1.4x/1.3x — matches
+   the prose ratios; absolute seconds differ slightly from the older
+   draft table: number pass).
+   ========================================================================== */
+.fig-concurrency { margin-block: 2rem; }
+.fig-concurrency .fig-title {
+  margin-bottom: .25rem; font-size: var(--text-sm); font-weight: 500;
+  color: var(--ink); text-transform: uppercase; letter-spacing: var(--tracking-wide);
+}
+.fig-concurrency .fig-desc {
+  margin-bottom: .875rem; font-size: var(--text-xs);
+  color: var(--ink-faint); line-height: var(--leading-relaxed);
+}
+.fig-concurrency button { font: inherit; color: inherit; background: none; cursor: pointer; }
+.fig-concurrency :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* legend chips */
+.cc-legend { display: flex; flex-wrap: wrap; gap: .375rem .5rem; margin-bottom: .75rem; }
+.cc-chip {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-size: 10px; color: var(--neutral-600);
+  border: 1px solid var(--hairline); padding: .25rem .5rem;
+  text-transform: uppercase; letter-spacing: var(--tracking-wider);
+  transition: border-color .15s, color .15s, opacity .15s;
+}
+.cc-chip:hover, .cc-chip.is-active { border-color: var(--ink); color: var(--ink); }
+.cc-chip.is-dim { opacity: .4; }
+.cc-chip .swatch { width: 14px; height: 2px; display: inline-block; position: relative; }
+.cc-chip .swatch::after {
+  content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 7px; height: 7px; background: inherit;
+}
+
+.cc-plot-wrap { position: relative; }
+.cc-plot { display: block; width: 100%; height: auto; }
+
+.cc-grid { stroke: var(--neutral-200); stroke-width: 1; }
+.cc-axis { stroke: var(--hairline); stroke-width: 1; }
+.cc-tick-label, .cc-axis-title { fill: var(--ink-faint); font-family: var(--font-mono); }
+.cc-tick-label { font-size: 9.5px; }
+.cc-axis-title { font-size: 10px; letter-spacing: .5px; }
+.cc-hint { fill: var(--neutral-400); font-size: 9.5px; font-family: var(--font-mono); letter-spacing: .5px; }
+
+/* series */
+.cc-series { transition: opacity .15s; }
+.cc-series.is-dim { opacity: .25; }
+.cc-series .line { fill: none; stroke-width: 2; }
+.cc-series .pt { stroke: var(--background); stroke-width: 2; }
+.cc-series .slabel { font-family: var(--font-mono); font-size: 10px; fill: var(--ink-dim); letter-spacing: .3px; }
+.cc-series.s-sauron .slabel { fill: var(--ink); font-weight: 700; }
+.cc-series .plabel { font-family: var(--font-mono); font-size: 9.5px; fill: var(--ink-faint); letter-spacing: .3px; }
+
+/* entrance: line draws, points + labels follow */
+.fig-armed .cc-series .line { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); }
+.fig-play .cc-series .line {
+  stroke-dasharray: var(--len); stroke-dashoffset: var(--len);
+  animation: cc-draw 1s cubic-bezier(.4, 0, .3, 1) forwards;
+  animation-delay: var(--d, 0s);
+}
+.cc-series .pt, .cc-series .plabel { }
+.fig-armed .cc-series .pt, .fig-armed .cc-series .plabel, .fig-armed .cc-series .slabel { opacity: 0; }
+.fig-play .cc-series .pt, .fig-play .cc-series .plabel, .fig-play .cc-series .slabel {
+  opacity: 0;
+  animation: cc-fade .25s ease-out forwards;
+  animation-delay: calc(var(--d, 0s) + var(--pd, 0s));
+}
+@keyframes cc-draw { to { stroke-dashoffset: 0; } }
+@keyframes cc-fade { to { opacity: 1; } }
+
+/* gap rulers */
+.cc-gap .gap-line { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 2 3; }
+.cc-gap .gap-label { font-family: var(--font-mono); font-size: 9.5px; fill: var(--ink-faint); letter-spacing: .3px; }
+.fig-armed .cc-gap { opacity: 0; }
+.fig-play .cc-gap {
+  opacity: 0;
+  animation: cc-fade .3s ease-out forwards;
+  animation-delay: var(--pd, 1.5s);
+}
+
+/* column hover */
+.cc-col line { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 3 3; }
+.cc-col { opacity: 0; transition: opacity .12s; pointer-events: none; }
+.cc-col.on { opacity: 1; }
+
+/* tooltip */
+.cc-tip {
+  position: absolute; z-index: 5; pointer-events: none;
+  border: 1px solid var(--ink); background: var(--background);
+  padding: .5rem .625rem; min-width: 175px;
+  opacity: 0; transition: opacity .12s;
+}
+.cc-tip.on { opacity: 1; }
+.cc-tip .t-name { font-size: 10px; font-weight: 700; color: var(--ink); text-transform: uppercase; letter-spacing: var(--tracking-wider); margin-bottom: .3rem; }
+.cc-tip .t-row { display: flex; justify-content: space-between; gap: .875rem; font-size: 10px; color: var(--neutral-600); line-height: 1.7; }
+.cc-tip .t-row b { color: var(--ink); font-weight: 700; }
+.cc-tip .t-row .dot { display: inline-block; width: 7px; height: 7px; margin-right: .3rem; }
+
+/* replay */
+.cc-replay {
+  position: absolute; top: -28px; right: 0;
+  font-size: 10px; color: var(--ink-faint); border: 1px solid var(--hairline);
+  padding: .2rem .5rem; text-transform: uppercase; letter-spacing: var(--tracking-wider);
+  opacity: 0; transition: opacity .2s, color .15s, border-color .15s;
+}
+.cc-replay.on { opacity: 1; }
+.cc-replay:hover { color: var(--ink); border-color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .fig-armed .cc-series .line, .fig-play .cc-series .line { stroke-dasharray: none; stroke-dashoffset: 0; animation: none; }
+  .fig-armed .cc-series .pt, .fig-play .cc-series .pt,
+  .fig-armed .cc-series .plabel, .fig-play .cc-series .plabel,
+  .fig-armed .cc-series .slabel, .fig-play .cc-series .slabel,
+  .fig-armed .cc-gap, .fig-play .cc-gap { opacity: 1; animation: none; }
+}
+
+/* ==========================================================================
+   FIGURE 7 — ADMISSION GATE (§3, interactive)
+   Source/sandbox: figures/fig7-admission-gate.html (keep in sync).
+   Vertical pipeline card | horizontal 3-stage worked example, shared
+   verdict strip; 2×2 toggles (route × outcome); flowing-dash arrows;
+   reserved cells, zero reflow. Real locators/evidence-type names kept
+   per user — only dataset-derived content needs paraphrasing later.
+   ========================================================================== */
+:root {
+  --acc-admit: #3e7a45;
+  --acc-admit-soft: color-mix(in srgb, #3e7a45 8%, transparent);
+  --acc-reject: #c2410c;
+  --acc-reject-soft: color-mix(in srgb, #c2410c 8%, transparent);
+}
+[data-mode="dark"] {
+  --acc-admit: #57a860;
+  --acc-admit-soft: color-mix(in srgb, #57a860 14%, transparent);
+  --acc-reject: #b9542e;
+  --acc-reject-soft: color-mix(in srgb, #b9542e 14%, transparent);
+}
+
+.fig-admission { margin-block: 2rem; }
+.fig-admission .fig-title {
+  margin-bottom: .25rem; font-size: var(--text-sm); font-weight: 500;
+  color: var(--ink); text-transform: uppercase; letter-spacing: var(--tracking-wide);
+}
+.fig-admission .fig-desc {
+  margin-bottom: .875rem; font-size: var(--text-xs);
+  color: var(--ink-faint); line-height: var(--leading-relaxed);
+}
+
+/* ---------- toggles ---------- */
+.ag-toggles { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-bottom: .75rem; align-items: center; }
+.ag-toggle { display: flex; align-items: center; gap: .5rem; }
+.ag-toggle .t-label { font-size: 10px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: var(--tracking-wider); }
+.ag-seg { display: inline-flex; border: 1px solid var(--hairline); }
+.ag-seg button {
+  font-size: 10px; padding: .3rem .625rem; color: var(--neutral-600);
+  text-transform: uppercase; letter-spacing: var(--tracking-wider);
+  transition: color .15s, background-color .15s;
+}
+.ag-seg button + button { border-left: 1px solid var(--hairline); }
+.ag-seg button[aria-pressed="true"] { background: var(--ink); color: var(--background); }
+.ag-replay {
+  font-size: 10px; color: var(--ink-faint); border: 1px solid var(--hairline);
+  padding: .3rem .625rem; text-transform: uppercase; letter-spacing: var(--tracking-wider);
+  margin-left: auto;
+}
+.ag-replay:hover { color: var(--ink); border-color: var(--ink); }
+
+/* ==========================================================================
+   LAYOUT — pipeline card | example card, verdict strip below
+   ========================================================================== */
+.ag-layout { display: grid; grid-template-columns: 238px 1fr; gap: .875rem; }
+@media (max-width: 620px) { .ag-layout { grid-template-columns: 1fr; } }
+.ag-card { border: 1px solid var(--hairline); background: var(--neutral-50); padding: .625rem .7rem .7rem; }
+@media (min-width: 621px) { .ag-card { height: 466px; } }
+.ag-card .tile-label {
+  font-size: 10px; color: var(--ink-faint); text-transform: uppercase;
+  letter-spacing: var(--tracking-wider); margin-bottom: .6rem;
+}
+
+/* ==========================================================================
+   PIPELINE (left card) — vertical, full detail
+   ========================================================================== */
+.ag-pipe { display: flex; flex-direction: column; height: calc(100% - 24px); }
+.ag-node {
+  border: 1px solid var(--neutral-300); background: var(--background);
+  padding: .45rem .5rem; font-size: 10px; color: var(--neutral-400);
+  letter-spacing: .3px; text-align: center;
+  transition: border-color .3s, color .3s, box-shadow .3s;
+}
+.ag-node .sub { display: block; font-size: 8.5px; margin-top: .15rem; letter-spacing: .3px; color: inherit; opacity: .8; }
+.ag-node.lit { border-color: var(--ink); color: var(--ink); box-shadow: 0 0 0 2px var(--acc-admit-soft); }
+.ag-node.route-off { border-style: dashed; }
+
+/* vertical flowing-dash edges with arrowheads */
+.ag-vedge { position: relative; flex: 1; min-height: 26px; }
+.ag-vedge::before {
+  content: ""; position: absolute; left: 50%; top: 3px; bottom: 10px;
+  width: 2px; margin-left: -1px;
+  background: repeating-linear-gradient(180deg, var(--neutral-300) 0 5px, transparent 5px 10px);
+}
+.ag-vedge::after {
+  content: ""; position: absolute; left: 50%; bottom: 2px; margin-left: -5px;
+  border-left: 5px solid transparent; border-right: 5px solid transparent;
+  border-top: 7px solid var(--neutral-300); transition: border-top-color .3s;
+}
+.ag-vedge.lit::before {
+  background: repeating-linear-gradient(180deg, var(--acc-admit) 0 5px, transparent 5px 10px);
+  animation: ag-vflow .8s linear infinite;
+}
+.ag-vedge.lit::after { border-top-color: var(--acc-admit); }
+.ag-vedge .elabel {
+  position: absolute; left: 50%; margin-left: 10px; top: 50%; transform: translateY(-50%);
+  font-size: 8px; color: var(--ink-faint); letter-spacing: .4px; text-transform: uppercase;
+  white-space: nowrap;
+}
+@keyframes ag-vflow { to { background-position: 0 10px; } }
+
+.ag-branch { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; }
+.ag-branch-edges { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; flex: 1; min-height: 26px; }
+
+.ag-gate { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--neutral-300); transition: border-color .3s, box-shadow .3s; }
+.ag-gate.lit { border-color: var(--ink); box-shadow: 0 0 0 2px var(--acc-admit-soft); }
+.ag-gate .g-half {
+  padding: .4rem .4rem; font-size: 9.5px; text-align: center;
+  color: var(--neutral-400); letter-spacing: var(--tracking-wider); text-transform: uppercase;
+  transition: background-color .3s, color .3s;
+}
+.ag-gate .g-half + .g-half { border-left: 1px solid var(--neutral-300); }
+.ag-gate.lit[data-g="admitted"] .g-admit { background: var(--acc-admit-soft); color: var(--acc-admit); font-weight: 700; }
+.ag-gate.lit[data-g="rejected"] .g-reject { background: var(--acc-reject-soft); color: var(--acc-reject); font-weight: 700; }
+
+/* ==========================================================================
+   EXAMPLE (right card) — horizontal 3-stage flow
+   ========================================================================== */
+.ag-stages {
+  display: grid; grid-template-columns: 1fr 20px 1.02fr 20px 1.22fr;
+  gap: 0; height: calc(100% - 24px);
+}
+@media (max-width: 620px) { .ag-stages { grid-template-columns: 1fr; height: auto; } .ag-harrow { display: none; } }
+.ag-stage { display: flex; flex-direction: column; gap: .55rem; min-width: 0; min-height: 0; overflow: hidden; }
+
+/* horizontal flowing-dash arrows between stages */
+.ag-harrow { position: relative; align-self: stretch; }
+.ag-harrow::before {
+  content: ""; position: absolute; top: 84px; left: 2px; right: 8px;
+  height: 2px; margin-top: -1px;
+  background: repeating-linear-gradient(90deg, var(--neutral-300) 0 5px, transparent 5px 10px);
+}
+.ag-harrow::after {
+  content: ""; position: absolute; right: 1px; top: 84px; margin-top: -5px;
+  border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+  border-left: 6px solid var(--neutral-300); transition: border-left-color .3s;
+}
+.ag-harrow.lit::before {
+  background: repeating-linear-gradient(90deg, var(--acc-admit) 0 5px, transparent 5px 10px);
+  animation: ag-hflow .8s linear infinite;
+}
+.ag-harrow.lit::after { border-left-color: var(--acc-admit); }
+@keyframes ag-hflow { to { background-position: 10px 0; } }
+
+.ag-step { opacity: 0; transform: translateY(8px); transition: opacity .35s, transform .35s; flex-shrink: 0; }
+.ag-step.in { opacity: 1; transform: translateY(0); }
+
+/* reserved cells */
+#s-claim { height: 118px; }
+#s-meta { flex: 1; min-height: 0; }
+#s-source { flex: 1; min-height: 0; }
+#s-check { flex: 1; min-height: 0; }
+#s-result { height: 96px; }
+#s-source .ag-source, #s-check .ag-check, #s-result .ag-result { height: 100%; overflow: hidden; }
+
+.ag-atompack {
+  border: 1px solid var(--neutral-300); background: var(--background);
+  padding: .5rem .55rem; height: 100%; overflow: hidden;
+  display: flex; flex-direction: column; gap: .55rem;
+}
+.ag-atompack .pack-head {
+  font-size: 8.5px; color: var(--ink-faint); text-transform: uppercase;
+  letter-spacing: .5px; padding-bottom: .35rem; border-bottom: 1px solid var(--neutral-200);
+}
+
+.ag-field .f-key {
+  font-size: 9px; color: var(--ink-faint); text-transform: uppercase;
+  letter-spacing: var(--tracking-wider); margin-bottom: .2rem;
+}
+.ag-field .f-val { font-size: 10px; color: var(--ink-dim); line-height: 1.5; overflow-wrap: break-word; }
+.ag-field .f-val code { background: var(--neutral-100); color: var(--ink); padding: .05rem .2rem; font-size: 9.5px; }
+
+.ag-loc .resolve-tag {
+  display: inline-block; margin-top: .25rem;
+  font-size: 8.5px; letter-spacing: .5px; text-transform: uppercase;
+  color: var(--ink-faint); opacity: 0; transition: opacity .3s, color .3s;
+}
+.ag-loc .resolve-tag.in { opacity: 1; }
+.ag-loc .resolve-tag.ok { color: var(--acc-admit); }
+
+/* source panel */
+.ag-source { border: 1px solid var(--neutral-300); background: var(--neutral-100); }
+.src-line { display: flex; flex-direction: column; gap: .2rem; padding: .35rem .45rem; border-bottom: 1px solid var(--neutral-200); }
+.src-line:last-child { border-bottom: 0; }
+.src-line .src-tag {
+  align-self: flex-start; font-size: 8px; color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: .5px; border: 1px solid var(--neutral-300);
+  padding: .05rem .3rem;
+}
+.src-line .src-txt { font-size: 9.5px; color: var(--ink-dim); line-height: 1.5; overflow-wrap: break-word; min-width: 0; }
+.ag-source .src-head {
+  font-size: 8.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .5px;
+  padding: .3rem .45rem; border-bottom: 1px solid var(--neutral-200);
+}
+.ag-source .src-body { padding: .4rem .45rem; font-size: 9.5px; color: var(--ink-dim); line-height: 1.55; white-space: pre-wrap; overflow-wrap: break-word; }
+
+.ag-events { display: flex; flex-direction: column; gap: 2px; padding: .3rem .4rem; }
+.ag-ev {
+  display: flex; justify-content: space-between; align-items: center; gap: .3rem;
+  font-size: 9.5px; color: var(--ink-dim); padding: .1rem .3rem;
+  border: 1px solid transparent; transition: border-color .25s, background-color .25s;
+  white-space: nowrap;
+}
+.ag-ev .ev-mark { font-size: 9.5px; opacity: 0; transition: opacity .2s; }
+.ag-ev.checked { border-color: var(--neutral-300); }
+.ag-ev.checked.m-ok { border-color: var(--acc-admit); background: var(--acc-admit-soft); }
+.ag-ev.checked.m-no { border-color: var(--acc-reject); background: var(--acc-reject-soft); }
+.ag-ev.checked .ev-mark { opacity: 1; }
+.ag-ev.m-ok .ev-mark { color: var(--acc-admit); }
+.ag-ev.m-no .ev-mark { color: var(--acc-reject); }
+
+/* check panel */
+.ag-check { border: 1px dashed var(--neutral-300); padding: .5rem .55rem; }
+.ag-check .c-head {
+  font-size: 9px; color: var(--ink-faint); text-transform: uppercase;
+  letter-spacing: var(--tracking-wider); margin-bottom: .35rem;
+}
+.ag-check .c-line { font-size: 9.5px; color: var(--ink-dim); line-height: 1.5; }
+.ag-check .c-line b { color: var(--ink); }
+.ag-iso { display: flex; flex-direction: column; gap: .35rem; margin: .35rem 0; }
+.ag-iso .iso-box { border: 1px solid var(--neutral-300); background: var(--background); padding: .3rem .4rem; }
+.ag-iso .iso-key { font-size: 8.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .5px; margin-bottom: .12rem; }
+.ag-iso .iso-val { font-size: 9px; color: var(--ink-dim); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.ag-stamp {
+  display: inline-block; margin-top: .3rem;
+  font-size: 10.5px; font-weight: 700; letter-spacing: var(--tracking-wider); text-transform: uppercase;
+  border: 2px solid; padding: .22rem .55rem;
+  opacity: 0; transform: scale(1.6) rotate(-5deg);
+  transition: opacity .25s, transform .35s cubic-bezier(.2,1.3,.4,1);
+}
+.ag-stamp.in { opacity: 1; transform: scale(1) rotate(-2deg); }
+.ag-stamp.s-ok { color: var(--acc-admit); border-color: var(--acc-admit); }
+.ag-stamp.s-no { color: var(--acc-reject); border-color: var(--acc-reject); }
+
+/* result */
+.ag-result { padding: .4rem .5rem; font-size: 9.5px; line-height: 1.5; border: 1px solid; letter-spacing: .3px; }
+.ag-result b { font-weight: 700; text-transform: uppercase; }
+.ag-result.r-ok { border-color: var(--acc-admit); color: var(--acc-admit); background: var(--acc-admit-soft); }
+.ag-result.r-no { border-color: var(--acc-reject); color: var(--acc-reject); background: var(--acc-reject-soft); }
+
+/* ==========================================================================
+   VERDICT STRIP — full width; the pipeline's exit arrow feeds it
+   ========================================================================== */
+.ag-verdict-row { display: grid; grid-template-columns: 238px 1fr; gap: .875rem; margin-top: 0; }
+@media (max-width: 620px) { .ag-verdict-row { grid-template-columns: 1fr; } }
+.ag-exitgrid { display: grid; grid-template-columns: 1fr 20px 1.02fr 20px 1.22fr; }
+.ag-exit { position: relative; height: 30px; }
+.ag-exit::before {
+  content: ""; position: absolute; left: 50%; top: 0; bottom: 8px;
+  width: 2px; margin-left: -1px;
+  background: repeating-linear-gradient(180deg, var(--neutral-300) 0 5px, transparent 5px 10px);
+}
+.ag-exit::after {
+  content: ""; position: absolute; left: 50%; bottom: 1px; margin-left: -5px;
+  border-left: 5px solid transparent; border-right: 5px solid transparent;
+  border-top: 7px solid var(--neutral-300); transition: border-top-color .3s;
+}
+.ag-exit.lit::before {
+  background: repeating-linear-gradient(180deg, var(--acc-admit) 0 5px, transparent 5px 10px);
+  animation: ag-vflow .8s linear infinite;
+}
+.ag-exit.lit::after { border-top-color: var(--acc-admit); }
+.ag-exit .elabel {
+  position: absolute; left: 50%; margin-left: 10px; top: 50%; transform: translateY(-50%);
+  font-size: 8px; color: var(--ink-faint); letter-spacing: .4px; text-transform: uppercase; white-space: nowrap;
+}
+
+.ag-verdict {
+  border: 1px solid var(--ink); background: var(--background);
+  padding: .5rem .75rem; height: 62px; overflow: hidden;
+  display: flex; align-items: center; gap: 1rem;
+}
+.ag-verdict .v-title { font-size: 10px; font-weight: 700; color: var(--ink); text-transform: uppercase; letter-spacing: var(--tracking-wider); flex-shrink: 0; }
+.ag-verdict .v-note { font-size: 9.5px; color: var(--ink-faint); line-height: 1.5; flex: 1; min-width: 0; }
+.ag-chip {
+  display: inline-flex; align-items: center; gap: .35rem;
+  font-size: 9.5px; padding: .25rem .5rem; letter-spacing: .3px; flex-shrink: 0;
+  opacity: 0; transform: translateX(10px);
+  transition: opacity .35s, transform .35s;
+}
+.ag-chip.in { opacity: 1; transform: translateX(0); }
+.ag-chip.c-receipt { border: 1px solid var(--acc-admit); color: var(--acc-admit); background: var(--acc-admit-soft); }
+.ag-chip.c-stopped { border: 1px dashed var(--acc-reject); color: var(--acc-reject); }
+[data-outcome="admitted"] .ag-chip.c-stopped { display: none; }
+[data-outcome="rejected"] .ag-chip.c-receipt { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-step, .ag-chip, .ag-stamp, .ag-loc .resolve-tag { transition: none !important; }
+  .ag-vedge.lit::before, .ag-harrow.lit::before, .ag-exit.lit::before { animation: none; }
+}
+
+/* prose footnotes — figcaption register, read in flow under the paragraph */
+.prose .footnote {
+  font-size: var(--text-xs); color: var(--ink-faint);
+  line-height: var(--leading-relaxed);
+}
+
+/* figure-number kickers — reading-order numbering matching the prose refs */
+.prose .fig-kicker {
+  font-size: 9.5px; color: var(--ink-faint); text-transform: uppercase;
+  letter-spacing: var(--tracking-widest); margin-bottom: .3rem;
+}
+
+/* ==========================================================================
+   REDUCED MOTION
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+/* ==========================================================================
+   PRINT — for circulating drafts as PDF
+   ========================================================================== */
+@media print {
+  .site-header, .toc, .post-footer, .site-footer, .mobile-nav, .lightbox { display: none !important; }
+  .post-body { padding-block: 0; }
+  .prose { max-width: none; }
+  .code-block, .figure-image, .figure-table, .figure-chart { break-inside: avoid; }
+}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ---- Retheme to danielyuezhang homepage: ivory / teal / Newsreader+Inter ---- */
+:root {
+  --background: #fdfcf9; --card: #fdfcf9;
+  --ink: #1f2421; --ink-dim: #43504a; --ink-faint: #8a938d;
+  --hairline: #e7e4dc; --border: #e7e4dc; --muted: #f3f1ea;
+  --neutral-50: #f8f6f0; --neutral-100: #f3f1ea; --neutral-200: #e7e4dc;
+  --acc-green: #0e6e64;
+  --acc-green-soft: color-mix(in srgb, #0e6e64 10%, transparent);
+  --c-sauron: #0e6e64;
+  --font-mono: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Newsreader', Georgia, serif;
+}
+.post-title, .post-body h2, .post-body h3 { font-family: 'Newsreader', Georgia, serif; font-weight: 500; }
+.site-nav a.home-link, .mobile-nav a.home-link { color: var(--acc-green); }
+</style>
+</head>
+<body>
+
+<!-- ============================== SITE HEADER ============================== -->
+
+<main>
+  <!-- ============================== POST HERO ============================== -->
+  <div class="post-hero">
+    <div class="container post-hero__inner">
+
+      <div class="post-hero__headline">
+
+        <h1 class="post-title">Sauron: An Eye for Evidence</h1>
+        <p class="post-dek">Introducing an evidence-first agentic verifier for long-horizon tasks</p>
+
+        <!-- Bylines are plain text on the live site — author names are not linked. -->
+        <!-- [FILL] author list -->
+        <p class="post-byline">
+          <span class="post-byline__by">By </span><span>Reza Sanayei, Razvan-Gabriel Dumitru, Sunjie Hou, MohammadHossein Rezaei, Haris Riaz, Robert Vacareanu, Minglai Yang, Ying Liu, Mihai Surdeanu, Daniel Yue Zhang</span>
+        </p>
+        <div class="post-links">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== ARTICLE ============================== -->
+  <article class="container post-body">
+    <div class="post-layout">
+      <!-- The TOC is generated from the h2/h3 headings below — write
+           headings and it keeps itself in sync (ids included). -->
+      <div class="prose" id="prose">
+
+                <h2>TL;DR</h2>
+
+        <ul>
+          <li>Sauron is an agentic, evidence-first verifier for long-horizon, rubric-graded tasks. It interrogates state, artifacts, and the full trace; every verdict comes with verified, source-located receipts.</li>
+          <li>It beats the strongest competing agentic judge, Gandalf, on all eight backbones we tested. On the best-performing one, GPT-5.6 Sol, Sauron reaches 0.958 vs. 0.923 unmet-F1 at 23% lower cost, grades tasks 4.2&times; faster, and widens its lead to 6.7 F1 points on process criteria.</li>
+          <li>It catches reward hacking: across 637 paired fault-injection bundles, Sauron detects 97% of injected faults while flagging 2% of clean controls (&Delta;<sub>fault</sub> = 0.950), where trajectory-blind judges stay below 0.1.</li>
+          <li>On the <a href="https://arxiv.org/abs/2505.08638" target="_blank" rel="noopener noreferrer">TRAIL</a> benchmark, Sauron leads Gandalf and TRAIL&rsquo;s own LLM judge on every metric, even from a cheaper backbone.</li>
+        </ul>
+
+        <!-- FIGURE 1 — interactive verifier-access diagram.
+             Iteration sandbox: figures/fig1-verifier-access.html (keep in sync). -->
+        <figure class="fig-verifier-access" id="fig1">
+          <p class="fig-kicker">Figure 1</p>
+          <p class="fig-title">What each verifier can see</p>
+          <p class="fig-desc">Select a verifier.</p>
+
+          <div class="va-controls">
+            <span class="t-label">Context</span>
+            <span class="va-seg" role="group" aria-label="Context mode">
+              <button type="button" id="mode-default" aria-pressed="true">Default</button>
+              <button type="button" id="mode-fulltrace" aria-pressed="false">+ full trace</button>
+            </span>
+            <button type="button" class="va-replay" id="va-replay">&#8635; replay</button>
+          </div>
+
+          <div class="va-stage" id="va-stage">
+            <div class="evidence-row">
+              <div class="evidence ev-trace" id="ev-trace">
+                <div class="ev-label"><span>Full agent trajectory</span><span class="ev-sub">events over time &rarr;</span></div>
+                <div class="trace-strip" id="trace-strip" aria-hidden="true"><div class="va-scan" id="va-scan"></div></div>
+                <div class="trace-legend">
+                  <span class="key"><span class="swatch"></span>tool call</span>
+                  <span class="key"><span class="swatch s-msg"></span>message</span>
+                  <span class="key"><span class="swatch s-final"></span>final message</span>
+                </div>
+              </div>
+              <div class="evidence ev-state" id="ev-state">
+                <div class="ev-label"><span>State &amp; artifacts</span></div>
+                <div class="artifact-grid" aria-hidden="true">
+                  <span class="artifact" data-a="0">report.pdf</span>
+                  <span class="artifact" data-a="1">data.csv</span>
+                  <span class="artifact" data-a="2">records.db</span>
+                  <span class="artifact" data-a="3">dashboard</span>
+                  <span class="artifact" data-a="4">files/</span>
+                  <span class="artifact" data-a="5">messages</span>
+                </div>
+                <span class="diff-badge">before&rarr;after diff</span>
+              </div>
+            </div>
+
+            <div class="va-context" id="va-context">
+              <div class="ctx-head">
+                <span id="ctx-title">Context window &mdash; Sauron</span>
+                <span class="ctx-count" id="ctx-count"></span>
+              </div>
+              <div class="ctx-slots" id="ctx-slots" aria-hidden="true"></div>
+              <div class="ctx-legend" aria-hidden="true">
+                <span class="key"><span class="ctx-item c-rel c-tool" style="height:14px"></span>relevant</span>
+                <span class="key"><span class="ctx-item c-irr c-tool" style="height:14px"></span>irrelevant</span>
+                <span class="key"><span class="ctx-item c-final" style="height:14px"></span>final message</span>
+                <span class="key"><span class="ctx-item c-state"></span>state</span>
+                <span class="key"><span class="ctx-item c-diff"></span>diff</span>
+              </div>
+            </div>
+
+            <div class="verifier-row" role="group" aria-label="Verifiers — select to watch what enters its context">
+              <button type="button" class="verifier v-sauron" data-v="sauron" aria-pressed="true">
+                <span class="v-name"><span class="v-dot"></span>Sauron</span>
+                <span class="v-mode">agentic &middot; peeks</span>
+              </button>
+              <button type="button" class="verifier v-gandalf" data-v="gandalf" aria-pressed="false">
+                <span class="v-name"><span class="v-dot"></span>Gandalf</span>
+                <span class="v-mode">agentic &middot; tools</span>
+              </button>
+              <button type="button" class="verifier v-archipelago" data-v="archipelago" aria-pressed="false">
+                <span class="v-name"><span class="v-dot"></span>Archipelago</span>
+                <span class="v-mode">one-shot &middot; diff + trace</span>
+              </button>
+              <button type="button" class="verifier v-autorubric" data-v="autorubric" aria-pressed="false">
+                <span class="v-name"><span class="v-dot"></span>AutoRubric</span>
+                <span class="v-mode">llm-as-a-judge</span>
+              </button>
+            </div>
+          </div>
+
+          <p class="fig-readout" aria-live="polite" id="fig-readout"></p>
+        </figure>
+
+        <h2>Why agentic verification</h2>
+
+        <p>The frontier of AI has moved beyond chatbots that answer questions to agents that do work. Today&rsquo;s agents execute long-running, <a href="https://arxiv.org/abs/2602.00933" target="_blank" rel="noopener noreferrer">multi-tool workflows</a> across real environments &mdash; editing files, updating databases, and sending messages. Success is no longer captured by an exact match or a passing test suite. Many requirements are better expressed as rubrics: Did the agent compute the value rather than hardcode it? Use the required source? Call the tools in the right order? These tasks are inherently semi-verifiable: we can specify success, but no single deterministic check can establish it. Evaluating them requires examining the result, the process, and the evidence left behind.</p>
+
+        <p>The stakes rise as <a href="https://www.anthropic.com/institute/recursive-self-improvement" target="_blank" rel="noopener noreferrer">AI enters its own development loop</a>. OpenAI&rsquo;s GPT-5.6 Sol <a href="https://x.com/tejalpatwardhan/status/2075272564629451110" target="_blank" rel="noopener noreferrer">post-training its smaller sibling Luna</a> offers a concrete glimpse of that frontier. Such loops depend on reliably finding failure modes and separating real gains from apparent ones. The <a href="https://arxiv.org/abs/2412.02674" target="_blank" rel="noopener noreferrer">generation&ndash;verification gap</a>, where models can recognize good work more reliably than producing it, provides the leverage. But once verdicts become training signals, every blind spot becomes an opening for <a href="https://arxiv.org/abs/2605.12474" target="_blank" rel="noopener noreferrer">reward hacking</a>. Self-improvement therefore needs verifiers that go beyond the answer: they must inspect the state, retrace the process, and show their receipts.</p>
+
+        <h2>Meet Sauron</h2>
+
+        <p>Sauron is an agentic, evidence-first verifier: for each criterion, it adaptively interrogates the state, artifacts, and full agent trace, grounding every verdict in source-located, verified evidence (<a href="#fig1">Figure 1</a>). Three principles shape how it does this:</p>
+
+        <ol>
+          <li><strong>State and trace, cross-examined.</strong> The governing invariant is simple: state is the source of truth; the trace is a source of leads. For outcome claims, the environment is authoritative, and no agent claim overrides a contradiction there. But some criteria cannot be resolved from final state alone, such as whether the agent used the required tools in sequence or computed a value instead of hardcoding it. For these process claims, the full trajectory becomes admissible evidence: a record of what happened and a map of where to probe next.</li>
+          <li><strong>Bounded, adaptive interrogation.</strong> Inspired by <a href="https://arxiv.org/abs/2512.24601" target="_blank" rel="noopener noreferrer">Recursive Language Models</a>, Sauron keeps the full agent trajectory outside the model&rsquo;s context and accesses it through bounded queries. It starts with lightweight evidence: the final response, targeted state probes, and previously verified findings. It inspects relevant trace regions only when the criterion demands it. This selective navigation ties context use to what a criterion demands rather than to how long the trace is.</li>
+          <li><strong>Evidence-gated verdicts, with receipts.</strong> Sauron&rsquo;s unit of proof is an evidence atom: a claim paired with a closed-vocabulary evidence type and a machine-resolvable source locator. Admission is earned, not assumed. The locator must resolve, deterministic claims are checked mechanically, and semantic claims undergo an isolated faithfulness check: a model call that sees only the claim and exact source, not the judge&rsquo;s reasoning. It asks one question: Does this source support this claim? Only admitted atoms can be cited. No verified atom, no award; undecidable defaults to unmet. This evidence trail makes every decision re-auditable offline (<a href="#fig7">Figure 2</a>).</li>
+        </ol>
+
+        <!-- FIGURE 2 — interactive admission gate (2×2: route × outcome).
+             Iteration sandbox: figures/fig7-admission-gate.html (keep in sync). -->
+        <figure class="fig-admission" id="fig7" data-route="mechanical" data-outcome="admitted">
+          <p class="fig-kicker">Figure 2</p>
+  <p class="fig-title">Evidence is verified before it becomes citable</p>
+  <p class="fig-desc">Sauron resolves every proposed atom against its source, checks exact claims mechanically when possible, and sends semantic claims to an isolated faithfulness check. Only admitted atoms can support a verdict.</p>
+
+  <div class="ag-toggles" role="group" aria-label="Explore the admission gate">
+    <div class="ag-toggle">
+      <span class="t-label">Route</span>
+      <span class="ag-seg" role="group" aria-label="Verification route">
+        <button type="button" data-set="route" data-val="mechanical" aria-pressed="true">Mechanical</button>
+        <button type="button" data-set="route" data-val="faithfulness" aria-pressed="false">Faithfulness</button>
+      </span>
+    </div>
+    <div class="ag-toggle">
+      <span class="t-label">Outcome</span>
+      <span class="ag-seg" role="group" aria-label="Outcome">
+        <button type="button" data-set="outcome" data-val="admitted" aria-pressed="true">Admitted</button>
+        <button type="button" data-set="outcome" data-val="rejected" aria-pressed="false">Rejected</button>
+      </span>
+    </div>
+    <button type="button" class="ag-replay" id="ag-replay">&#8635; replay</button>
+  </div>
+
+  <div class="ag-layout">
+    <!-- ---------- PIPELINE (vertical) ---------- -->
+    <div class="ag-card">
+      <p class="tile-label">The admission pipeline</p>
+      <div class="ag-pipe">
+        <div class="ag-node" id="n-atom">Proposed atom<span class="sub">claim · evidence&nbsp;type · source&nbsp;locator</span></div>
+        <div class="ag-vedge" id="e-0"><span class="elabel">locator must resolve</span></div>
+        <div class="ag-node" id="n-resolve">Resolve source</div>
+        <div class="ag-branch-edges">
+          <div class="ag-vedge" id="e-mech"><span class="elabel">if exact</span></div>
+          <div class="ag-vedge" id="e-faith"><span class="elabel">otherwise</span></div>
+        </div>
+        <div class="ag-branch">
+          <div class="ag-node" id="n-mech">Mechanical<span class="sub">exact compare</span></div>
+          <div class="ag-node" id="n-faith">Faithfulness<span class="sub">isolated: claim + source only</span></div>
+        </div>
+        <div class="ag-branch-edges">
+          <div class="ag-vedge" id="e-gate-mech"></div>
+          <div class="ag-vedge" id="e-gate-faith"></div>
+        </div>
+        <div class="ag-gate" id="n-gate" data-g="admitted">
+          <div class="g-half g-admit">Admit ✓</div>
+          <div class="g-half g-reject">Reject ✕</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- EXAMPLE (horizontal flow) ---------- -->
+    <div class="ag-card">
+      <p class="tile-label">Worked example — the atom flows through</p>
+      <div class="ag-stages">
+        <div class="ag-stage">
+          <div class="ag-atompack" id="atompack">
+            <div class="pack-head">Proposed atom</div>
+            <div class="ag-step ag-field" id="s-claim">
+              <div class="f-key">Claim</div>
+              <div class="f-val" id="x-claim"></div>
+            </div>
+            <div class="ag-step ag-field ag-loc" id="s-meta">
+              <div class="f-key">Evidence type</div>
+              <div class="f-val" id="x-type"></div>
+              <div class="f-key" style="margin-top:.45rem">Source locator</div>
+              <div class="f-val" id="x-loc"></div>
+              <span class="resolve-tag" id="x-resolve">resolving…</span>
+            </div>
+          </div>
+        </div>
+        <div class="ag-harrow" id="h-1"></div>
+        <div class="ag-stage">
+          <div class="ag-step" id="s-source" style="height:100%">
+            <div class="ag-source">
+              <div class="src-head" id="x-srchead">source</div>
+              <div id="x-srcbody"></div>
+            </div>
+          </div>
+        </div>
+        <div class="ag-harrow" id="h-2"></div>
+        <div class="ag-stage">
+          <div class="ag-step" id="s-check">
+            <div class="ag-check">
+              <div class="c-head" id="x-checkhead"></div>
+              <div id="x-checkbody"></div>
+            </div>
+          </div>
+          <div class="ag-vedge" id="e-check-result" style="flex:0 0 22px; min-height:22px"></div>
+          <div class="ag-step" id="s-result">
+            <div class="ag-result" id="x-result"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- VERDICT ROW: exit arrow under the pipeline + strip ---------- -->
+  <div class="ag-verdict-row">
+    <div class="ag-exit" id="e-exit"><span class="elabel">admitted only</span></div>
+    <div class="ag-exitgrid">
+      <div></div><div></div><div></div><div></div>
+      <div class="ag-exit" id="e-exit-x"></div>
+    </div>
+  </div>
+  <div class="ag-verdict">
+    <span class="v-title">Verdict</span>
+    <span class="v-note" id="x-vnote">cites admitted atoms only</span>
+    <span class="ag-chip c-receipt" id="r-receipt"></span>
+    <span class="ag-chip c-stopped">✕ stopped at the gate — not citable</span>
+  </div>
+</figure>
+
+        <p>To keep this practical for multi-criterion tasks, Sauron groups related criteria around a shared pool of admitted evidence. Each gets its own verdict and receipts, while investigative work is reused.</p>
+
+        <h2>Results: better, cheaper, faster</h2>
+
+        <p>To evaluate verifiers on work agents perform today, we drew a held-out, stratified sample of 100 tasks from an internal corpus of roughly 700 personal-assistant episodes. In each, an agent navigates a simulated personal-data environment to fulfill an open-ended request, such as <em>audit my subscriptions</em> or <em>prepare a morning brief</em>. The median run spans 53 trace events and 20 tool calls, producing roughly 3 artifacts, including dashboards, CSVs, and PDFs. Each task pairs a fixed Opus 4.8 trajectory with a human-labeled rubric averaging 26 criteria, for 2,586 in total. We evaluate eight verifier backbones, matched across verifiers in every comparison.</p>
+
+        <p><a href="#fig2">Figure 3</a> plots unmet-F1 against cost for every verifier and backbone. We report F1 on the unmet class because failures make up only 29.7% of the gold labels, and missing one creates the false reward verification is meant to prevent. Across all eight backbones, Sauron posts the highest F1 and costs less than Gandalf, the strongest competing agent-as-a-judge; above AutoRubric&rsquo;s quality range, every point on the Pareto frontier belongs to Sauron.</p>
+
+        <!-- FIGURE 3 — interactive quality-vs-cost scatter.
+             Iteration sandbox: figures/fig2-results-frontier.html (keep in sync). -->
+        <figure class="fig-results-frontier" id="fig2">
+          <p class="fig-kicker">Figure 3</p>
+  <p class="fig-title">Quality vs. cost across eight backbones</p>
+  <p class="fig-desc">Unmet-F1 against total judging cost (log scale) &mdash; 100 tasks &middot; 2,586 criteria &middot; marker = verifier, color = backbone. Outlined circles are Sauron; the dashed line traces the Pareto frontier. The y-axis is broken to fit the text-only judge and Agent-as-a-Judge. Hover a verifier or a backbone to isolate it.</p>
+
+  <div class="fr-legend" id="fr-legend" role="group" aria-label="Verifiers"></div>
+
+  <div class="fr-plot-wrap" id="fr-wrap">
+    <svg class="fr-plot" id="fr-svg" role="img"
+      aria-label="Scatter plot of unmet-F1 versus judging cost on a log axis, forty points: five verifiers on eight backbones. Sauron has the highest F1 on every backbone, from 0.909 on Claude Sonnet 5 to 0.958 on GPT-5.6 Sol, and costs less than Gandalf on each. Archipelago sits far to the right at four to ten times the cost. AutoRubric and Agent-as-a-Judge are cheap but stay below 0.70 and 0.57 F1. A dashed step line marks the Pareto frontier, which runs through Sauron points only."></svg>
+    <div class="fr-tip" id="fr-tip"></div>
+    <button type="button" class="fr-replay" id="fr-replay">&#8635; replay</button>
+  </div>
+
+  <div class="fr-backbones" id="fr-legend-b" role="group" aria-label="Backbones"></div>
+
+</figure>
+
+        <p>GPT-5.6 Sol is the strongest backbone in the sweep, and the rest of this post reports on it. There, Sauron reaches 0.958 unmet-F1 and 0.940 MCC to Gandalf&rsquo;s 0.923 and 0.890, at 23% lower cost ($298 vs. $388; <a href="#tab1">Table 1</a>).</p>
+
+        <figure class="figure-table" id="tab1">
+  <table>
+    <thead>
+      <tr><th>Verifier</th><th>Unmet-F1 &uarr;</th><th>MCC &uarr;</th><th>Cost &darr;</th></tr>
+    </thead>
+    <tbody>
+      <tr><td data-bold>Sauron</td><td data-bold>0.958</td><td data-bold>0.940</td><td>$298</td></tr>
+      <tr><td>Gandalf</td><td>0.923</td><td>0.890</td><td>$388</td></tr>
+      <tr><td>Archipelago</td><td>0.919</td><td>0.885</td><td>$2,058</td></tr>
+      <tr><td>AutoRubric</td><td>0.649</td><td>0.479</td><td>$76</td></tr>
+      <tr><td>Agent-as-a-Judge</td><td>0.521</td><td>0.248</td><td>$235</td></tr>
+    </tbody>
+  </table>
+          <p class="fig-kicker">Table 1</p>
+  <p class="fig-title">Verifier quality on the benchmark at GPT-5.6 Sol</p>
+  <p class="fig-desc">All 2,586 criteria; cost is per full run. Bold = best per column.</p>
+</figure>
+
+        <p>Sauron is also faster than Gandalf. On a 10-task slice of the benchmark, with both verifiers at their shipped internal settings, Sauron grades the set in 17 minutes to Gandalf&rsquo;s 71 with one task in flight, 4.2&times; faster. Adding concurrent workers narrows the gap but never closes it: at eight tasks in flight, Sauron still finishes 2.1&times; sooner (<a href="#fig6">Figure 4</a>).</p>
+
+        <!-- FIGURE 6 — speed under concurrency.
+             Iteration sandbox: figures/fig6-concurrency.html (keep in sync). -->
+        <figure class="fig-concurrency" id="fig6">
+          <p class="fig-kicker">Figure 4</p>
+  <p class="fig-title">Sauron stays faster at every concurrency level</p>
+  <p class="fig-desc">Wall-clock (log scale) for a 10-task slice of the benchmark with 1&ndash;8 tasks in flight, both verifiers at their shipped internal settings &mdash; the multiplier marks Sauron&rsquo;s lead at each level.</p>
+
+  <div class="cc-legend" id="cc-legend"></div>
+
+  <div class="cc-plot-wrap" id="cc-wrap">
+    <svg class="cc-plot" id="cc-svg" role="img"
+      aria-label="Line chart of wall-clock time versus concurrent workers for a 10-task slice of the benchmark. Sauron: 17.1 minutes at 1 worker, 9.8 at 2, 5.0 at 4, 3.6 at 8. Gandalf: 71.0 minutes at 1 worker, 22.8 at 2, 11.9 at 4, 7.8 at 8. Sauron is faster at every level, from 4.2 times faster single-stream to 2.1 times faster at eight workers; on the log scale the gap stays visibly open."></svg>
+    <div class="cc-tip" id="cc-tip"></div>
+    <button type="button" class="cc-replay" id="cc-replay">&#8635; replay</button>
+  </div>
+</figure>
+
+        <h3>Where the separation lives: process criteria</h3>
+
+        <p>Process criteria assess how an agent produced its results. They ask whether required tools and sources were used, steps were taken in the right order, reported values matched tool outputs, and final claims agreed with the record. Final artifacts cannot settle these questions; the event history can. On the 411 process criteria within this benchmark, Sauron reached 0.968 unmet-F1, ahead of Gandalf at 0.901, Archipelago at 0.883, Agent-as-a-Judge at 0.821, and AutoRubric at 0.771 (<a href="#fig3">Figure 5</a>). Its lead over Gandalf is 6.7 points on process criteria against 2.4 on outcome criteria, and the process margin exceeds the outcome margin on every backbone.</p>
+
+        <!-- FIGURE 4 — animated process-criteria bars.
+             Iteration sandbox: figures/fig3-process-criteria.html (keep in sync). -->
+        <figure class="fig-process-bars" id="fig3">
+          <p class="fig-kicker">Figure 5</p>
+  <p class="fig-title">Process criteria</p>
+  <p class="fig-desc">F1 on the 411 process criteria &mdash; tool order, source access, computed-vs-hardcoded, claim-vs-record.</p>
+
+  <div class="pb-plot-wrap" id="pb-wrap">
+    <svg class="pb-plot" id="pb-svg" role="img"
+      aria-label="Horizontal bar chart of F1 on 411 process criteria. Sauron 0.968, Gandalf 0.901, Archipelago 0.883, Agent-as-a-Judge 0.821, AutoRubric 0.771. Sauron leads by 0.067 over the next-best verifier."></svg>
+    <div class="pb-tip" id="pb-tip"></div>
+    <button type="button" class="pb-replay" id="pb-replay">&#8635; replay</button>
+  </div>
+</figure>
+
+        <h2>Catching reward hacking red-handed</h2>
+
+        <p>To study how well verifiers distinguish genuine failures from plausible-looking success, we built a fault-injection suite of 637 bundles (13 fault families &times; 49). We injected failures from 13 realistic fault families, grounded in an <a href="https://arxiv.org/abs/2607.28802" target="_blank" rel="noopener noreferrer">interaction-centric taxonomy of agent failures</a>, into real runs and paired them with clean controls to separate genuine detection from blanket rejection. Faults range from specification gaming and evaluation awareness to fabricated claims, trace&ndash;state mismatches, and environment-caused failures.</p>
+
+        <p>We score each verifier by &Delta;<sub>fault</sub> = detection rate &minus; false-alarm rate, so blanket rejection earns nothing. Sauron reaches 0.950, detecting 97% of injected faults while flagging 2% of clean controls (<a href="#fig4">Figure 6</a>). At their default settings, Gandalf and AutoRubric lack trajectory access and collapse toward blanket rejection, at 0.091 and &minus;0.166. Passing both the full trajectory recovers much of the gap (0.675 and 0.716) but not all of it, and trace access alone does not resolve conflicts between what the agent said and what the environment shows: on trace&ndash;state mismatches, Sauron records +0.898, versus &minus;0.265 for Gandalf<sub>trace</sub> and &minus;0.939 for AutoRubric<sub>trace</sub>.</p>
+
+        <!-- FIGURE 5 — fault-injection MCC by access tier.
+             Iteration sandbox: figures/fig4-access-tiers.html (keep in sync). -->
+        <figure class="fig-access-tiers" id="fig4">
+          <p class="fig-kicker">Figure 6</p>
+  <p class="fig-title">Access to evidence separates verification from blanket rejection</p>
+  <p class="fig-desc">&Delta;<sub>fault</sub> (detection &minus; false alarm) on the fault-injection suite, grouped by what each configuration can see &mdash; hollow marks are the trajectory-blind defaults.</p>
+
+  <div class="at-plot-wrap" id="at-wrap">
+    <svg class="at-plot" id="at-svg" role="img"
+      aria-label="Horizontal dot plot of the detection-minus-false-alarm margin on the fault-injection suite, grouped by evidence access. State plus navigable trace: Sauron 0.950. Full trace ingested as text: AutoRubric 0.716, Gandalf 0.675. Trajectory-blind defaults: Gandalf 0.091, AutoRubric minus 0.166. Sauron is also 4.6 times cheaper and 2.2 times faster per bundle than full-trace Gandalf."></svg>
+    <div class="at-tip" id="at-tip"></div>
+    <button type="button" class="at-replay" id="at-replay">&#8635; replay</button>
+  </div>
+</figure>
+
+        <p>Here, Sauron outperforms Gandalf<sub>trace</sub> at 4.6&times; lower cost and 2.2&times; lower latency per bundle, and it costs less per bundle than even the text-only AutoRubric<sub>trace</sub> ($0.22 vs. $0.26). When verdicts become training signals, errors cut both ways. False approval rewards exploitation, while false blame incentivizes agents to conceal failures they did not cause.</p>
+
+        <h2>In search of real failures on TRAIL</h2>
+
+        <p>To further test Sauron on real agent failures, we evaluate it on <a href="https://arxiv.org/abs/2505.08638" target="_blank" rel="noopener noreferrer">TRAIL</a>, a public suite of 148 human-annotated agent traces from GAIA and SWE-bench Lite, with 841 labeled errors across 21 categories. TRAIL poses the question a verifier exists to answer: not whether the agent finished, but where along a long trajectory it went wrong, and how.</p>
+
+        <p>Sauron leads Gandalf and TRAIL&rsquo;s own LLM judge on every metric of both splits with both backbones we ran (<a href="#tab2">Table 2</a>). With GPT-5.6 Sol, its margins over the strongest comparator are 0.07 category F1, 0.18 location accuracy, and 0.19 joint accuracy on GAIA. Even on the smaller GPT-5.6 Terra, Sauron outperforms both Sol-backed baselines overall, which says the lead comes from how the trace is searched, not from which model searches it.</p>
+
+
+        <figure class="figure-table" id="tab2">
+  <table>
+    <thead>
+      <tr>
+        <th rowspan="2" class="t-grp-blank">Verifier</th>
+        <th colspan="3" class="t-grp">GAIA</th>
+        <th class="t-gap"></th>
+        <th colspan="3" class="t-grp">SWE-bench Lite</th>
+      </tr>
+      <tr data-header>
+        <th>wF1</th><th>Loc</th><th>Joint</th>
+        <th class="t-gap"></th>
+        <th>wF1</th><th>Loc</th><th>Joint</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr data-header><td colspan="8"><em>GPT-5.6 Sol</em></td></tr>
+      <tr><td data-bold>Sauron</td><td data-bold>0.533</td><td data-bold>0.725</td><td data-bold>0.444</td><td class="t-gap"></td><td data-bold>0.676</td><td data-bold>0.434</td><td data-bold>0.098</td></tr>
+      <tr><td>Gandalf</td><td>0.463</td><td>0.527</td><td>0.250</td><td class="t-gap"></td><td>0.610</td><td>0.244</td><td>0.062</td></tr>
+      <tr><td>Judge<sub>TRAIL</sub></td><td>0.461</td><td>0.547</td><td>0.215</td><td class="t-gap"></td><td>0.469</td><td>0.209</td><td>0.040</td></tr>
+      <tr data-header><td colspan="8"><em>GPT-5.6 Terra</em></td></tr>
+      <tr><td data-bold>Sauron</td><td data-bold>0.514</td><td data-bold>0.768</td><td data-bold>0.398</td><td class="t-gap"></td><td data-bold>0.675</td><td data-bold>0.572</td><td data-bold>0.064</td></tr>
+      <tr><td>Gandalf</td><td>0.366</td><td>0.448</td><td>0.149</td><td class="t-gap"></td><td>0.543</td><td>0.200</td><td>0.057</td></tr>
+      <tr><td>Judge<sub>TRAIL</sub></td><td>0.376</td><td>0.484</td><td>0.162</td><td class="t-gap"></td><td>0.463</td><td>0.169</td><td>0.047</td></tr>
+    </tbody>
+  </table>
+          <p class="fig-kicker">Table 2</p>
+  <p class="fig-title">TRAIL: error categorization and localization in public agent traces</p>
+  <p class="fig-desc">148 traces (117 GAIA, 31 SWE-bench Lite), 21 error categories. wF1 = support-weighted category F1; Loc = location accuracy; Joint = joint (span, category) accuracy. Judge<sub>TRAIL</sub> is the benchmark&rsquo;s official single-pass judge. Bold = best per backbone.</p>
+</figure>
+
+        <h2>Conclusion</h2>
+
+        <p>We introduced Sauron, an evidence-first agentic verifier that outperforms other agentic judges while costing less, running faster, and resisting reward hacking. The paper covers the architecture and the ablations behind each mechanism, and Sauron is available on GitHub. Next, we are taking Sauron into the training loop, where reliable reward-time verification matters most.</p>
+
+
+      </div>
+
+      <!-- TOC is injected here from the headings above -->
+      <aside class="toc">
+        <div class="toc__sticky">
+          <span class="toc__label">On this page</span>
+          <nav aria-label="Table of contents" id="toc-nav"></nav>
+        </div>
+      </aside>
+    </div>
+  </article>
+
+  <!-- ============================== ALL POSTS ============================== -->
+  <div class="post-footer">
+    <div class="container post-footer__inner">
+      <a class="btn-outline" href="/blog">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>All posts
+      </a>
+    </div>
+  </div>
+</main>
+
+<!-- ============================== SITE FOOTER ============================== -->
+<footer class="site-footer">
+  <div class="container site-footer__newsletter">
+    <button type="button" class="newsletter__copy">
+      <p class="newsletter__title">Scale Labs Newsletter</p>
+      <p class="newsletter__sub">Research, benchmarks, and insights — delivered to your inbox.</p>
+    </button>
+    <button type="button" class="btn-outline">Subscribe to newsletter</button>
+  </div>
+  <div class="container site-footer__legal">
+    <p>Copyright 2026 <a href="https://scale.com/" target="_blank" rel="noopener noreferrer">Scale Inc.</a> All rights reserved.</p>
+    <div class="site-footer__links">
+      <a href="https://scale.com/legal/terms" target="_blank" rel="noopener noreferrer">Terms</a>
+      <a href="https://scale.com/legal/privacy" target="_blank" rel="noopener noreferrer">Privacy</a>
+    </div>
+  </div>
+</footer>
+
+<!-- Image lightbox -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Expanded image">
+  <button type="button" class="lightbox__close" aria-label="Close">
+    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+  </button>
+  <img alt="" />
+</div>
+
+<script>
+(function () {
+  /* ----------------------------------------------------------------------
+     Table of contents — mirrors the site's TableOfContents component:
+       · ids from slugify(text): lowercase, non-alphanumeric → "-", trimmed
+       · h2 → pl-3, h3 → pl-5   (h4 is excluded)
+       · IntersectionObserver rootMargin "-80px 0px -60% 0px", threshold 0
+       · topmost intersecting heading wins
+       · active link gets border-ink + text-ink
+       · click → smooth scrollIntoView and set active immediately
+     ---------------------------------------------------------------------- */
+  var slugify = function (s) {
+    return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  };
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var scrollBehavior = function () { return reduceMotion.matches ? 'auto' : 'smooth'; };
+
+  var prose = document.getElementById('prose');
+  var nav = document.getElementById('toc-nav');
+  if (!prose || !nav) return;
+
+  var headings = Array.prototype.slice.call(prose.querySelectorAll('h2, h3'));
+  var links = {};
+
+  headings.forEach(function (h) {
+    if (!h.id) h.id = slugify(h.textContent || '');
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.textContent = h.textContent;
+    a.setAttribute('data-level', h.tagName === 'H3' ? '3' : '2');
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      h.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+      setActive(h.id);
+    });
+    nav.appendChild(a);
+    links[h.id] = a;
+  });
+
+  function setActive(id) {
+    Object.keys(links).forEach(function (k) {
+      links[k].setAttribute('aria-current', k === id ? 'true' : 'false');
+    });
+  }
+
+  if (headings.length) {
+    var io = new IntersectionObserver(function (entries) {
+      var visible = entries
+        .filter(function (e) { return e.isIntersecting; })
+        .sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; });
+      if (visible.length) setActive(visible[0].target.id);
+    }, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
+    headings.forEach(function (h) { io.observe(h); });
+  }
+
+  /* ---------- Code block copy button ---------- */
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var code = btn.closest('.code-block').querySelector('code');
+      var text = Array.prototype.slice.call(code.querySelectorAll('.ln'))
+        .map(function (l) { return l.textContent; }).join('\n');
+      if (!navigator.clipboard) return;
+      navigator.clipboard.writeText(text).then(function () {
+        btn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+        btn.setAttribute('aria-label', 'Copied');
+        setTimeout(function () {
+          btn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16V4a2 2 0 0 1 2-2h10"/></svg>';
+          btn.setAttribute('aria-label', 'Copy code');
+        }, 1300);
+      });
+    });
+  });
+
+  /* ---------- Image lightbox ---------- */
+  var lb = document.getElementById('lightbox');
+  var lbImg = lb.querySelector('img');
+  document.querySelectorAll('.figure-image__zoom').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var img = btn.querySelector('img');
+      if (!img) return; // placeholder, nothing to zoom
+      lbImg.src = img.src;
+      lbImg.alt = img.alt || '';
+      lb.setAttribute('data-open', 'true');
+    });
+  });
+  lb.addEventListener('click', function () { lb.setAttribute('data-open', 'false'); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') lb.setAttribute('data-open', 'false');
+  });
+
+  /* ---------- Mobile menu ---------- */
+  var menuBtn = document.querySelector('[data-toggle-menu]');
+  var mobileNav = document.getElementById('mobile-nav');
+  menuBtn.addEventListener('click', function () {
+    var open = mobileNav.getAttribute('data-open') === 'true';
+    mobileNav.setAttribute('data-open', String(!open));
+    menuBtn.setAttribute('aria-expanded', String(!open));
+  });
+
+  /* ---------- Dark-mode toggle (template affordance; live site is light-only) ---------- */
+  document.querySelector('[data-toggle-mode]').addEventListener('click', function () {
+    var html = document.documentElement;
+    if (html.getAttribute('data-mode') === 'dark') html.removeAttribute('data-mode');
+    else html.setAttribute('data-mode', 'dark');
+  });
+})();
+</script>
+
+
+<script>
+/* FIGURE 1 — verifier-access interaction (sandbox: figures/fig1-verifier-access.html) */
+(function () {
+  /* ---------- strip data ---------- */
+  var PATTERN = 'MTTMTTTMTMTTMTTTMTMTTTMMTTTMTTMM';   // 32 events + final
+  var RELEVANT = [4, 10, 16, 22, 28];                  // what the criteria actually need
+  var SAURON_STATE = [0, 2];                           // report.pdf, records.db — probed directly
+  var GANDALF_STATE = [0, 2];                          // report.pdf, records.db — the state tiles its tools surface
+  var ARCH_DIFF = [0, 2, 4, 5];                        // everything that changed: report.pdf, records.db, files/, messages
+
+  var STATES = {
+    sauron: {
+      title: 'Context window — Sauron',
+      readout: '<strong>Sauron</strong> cross-examines the trace against the world, loading five events the criteria depend on, alongside two probed artifacts and the final message into its context window. 8 items, all load-bearing.',
+      fulltrace: false
+    },
+    gandalf: {
+      title: 'Context window — Gandalf',
+      readout: '<strong>Gandalf</strong> inspects state with tools and reads the final message — making it structurally blind to any lead buried in the process (sequence, method, transient activity).',
+      readoutFull: '<strong>Handed the full trajectory as text, Gandalf</strong> must carry all 33 events — 27 of them irrelevant — in context for every criterion it judges, alongside the state its tools surface.',
+      fulltrace: true
+    },
+    archipelago: {
+      title: 'Context window — Archipelago',
+      readout: '<strong>Archipelago</strong> receives a before&rarr;after diff of the state and the full trajectory as text &mdash; all 33 events, whether or not a criterion needs them.',
+      fulltrace: false
+    },
+    autorubric: {
+      title: 'Context window — AutoRubric',
+      readout: '<strong>AutoRubric</strong> sees one thing: the final agent message. It cannot check whether anything the agent claims actually happened.',
+      readoutFull: '<strong>With the trace pasted in, AutoRubric</strong> holds 33 events of raw text — the five that matter buried in the noise.',
+      fulltrace: true
+    }
+  };
+
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var stage = document.getElementById('va-stage');
+  var strip = document.getElementById('trace-strip');
+  var scan = document.getElementById('va-scan');
+  var ctx = document.getElementById('va-context');
+  var slots = document.getElementById('ctx-slots');
+  var ctxTitle = document.getElementById('ctx-title');
+  var ctxCount = document.getElementById('ctx-count');
+  var readout = document.getElementById('fig-readout');
+
+  /* build the strip */
+  PATTERN.split('').forEach(function (ch) {
+    var t = document.createElement('span');
+    t.className = 'tick ' + (ch === 'T' ? 't-tool' : 't-msg');
+    strip.appendChild(t);
+  });
+  var finalTick = document.createElement('span');
+  finalTick.className = 'tick t-final';
+  strip.appendChild(finalTick);
+  var ticks = [].slice.call(strip.querySelectorAll('.tick'));
+  var arts = [].slice.call(document.querySelectorAll('.artifact'));
+
+  var active = 'sauron', mode = 'default';
+  var run = 0, timers = [];
+  function later(fn, t) { timers.push(setTimeout(fn, reduced ? 0 : t)); }
+  function clearAll() {
+    timers.forEach(clearTimeout); timers = [];
+    stage.querySelectorAll('.va-fly').forEach(function (f) { f.remove(); });
+  }
+
+  /* fly a clone from a source element into the next context slot */
+  function flyIn(srcEl, cls, instant) {
+    var slot = document.createElement('span');
+    slot.className = 'ctx-item ' + cls;
+    slot.style.visibility = 'hidden';
+    slots.appendChild(slot);
+    if (reduced || instant) { slot.style.visibility = ''; return; }
+    var sr = stage.getBoundingClientRect();
+    var a = srcEl.getBoundingClientRect(), b = slot.getBoundingClientRect();
+    var fly = document.createElement('span');
+    fly.className = 'va-fly ctx-item ' + cls;
+    fly.style.left = (a.left - sr.left) + 'px';
+    fly.style.top = (a.top - sr.top) + 'px';
+    stage.appendChild(fly);
+    void fly.offsetWidth;
+    fly.style.transform = 'translate(' + (b.left - a.left) + 'px,' + (b.top - a.top) + 'px)';
+    setTimeout(function () { fly.remove(); slot.style.visibility = ''; }, 520);
+  }
+  function setCount(txt, n) { ctxCount.textContent = txt; if (n !== undefined) ctxCount.setAttribute('data-n', n); }
+
+  function apply() {
+    run++;
+    var my = run;
+    clearAll();
+    var s = STATES[active];
+    var full = mode === 'fulltrace' && s.fulltrace;
+
+    /* reset */
+    ticks.forEach(function (t) { t.classList.remove('is-picked', 'is-carried'); });
+    arts.forEach(function (a) { a.classList.remove('is-picked', 'is-irr'); });
+    scan.classList.remove('on');
+    slots.innerHTML = '';
+    ctx.classList.remove('overload');
+    stage.classList.toggle('show-diff', active === 'archipelago');
+    ctxTitle.innerHTML = s.title;
+    setCount('');
+    readout.innerHTML = full ? s.readoutFull : s.readout;
+
+    document.querySelectorAll('.verifier').forEach(function (b) {
+      var on = b.getAttribute('data-v') === active;
+      b.setAttribute('aria-pressed', String(on));
+      b.classList.toggle('is-dim', !on);
+    });
+    var ftBtn = document.getElementById('mode-fulltrace');
+    ftBtn.disabled = !s.fulltrace;
+    if (!s.fulltrace && mode === 'fulltrace') { mode = 'default'; }
+    document.getElementById('mode-default').setAttribute('aria-pressed', String(mode === 'default'));
+    ftBtn.setAttribute('aria-pressed', String(mode === 'fulltrace'));
+
+    var t = 200;
+
+    if (active === 'sauron') {
+      /* peek: scan sweeps to each relevant tick, picks it, flies it in */
+      RELEVANT.forEach(function (idx, i) {
+        later(function () {
+          if (my !== run) return;
+          var tick = ticks[idx];
+          scan.classList.add('on');
+          scan.style.left = Math.max(0, tick.offsetLeft - 14) + 'px';
+        }, t + i * 620);
+        later(function () {
+          if (my !== run) return;
+          ticks[idx].classList.add('is-picked');
+          flyIn(ticks[idx], 'c-rel ' + (PATTERN[idx] === 'T' ? 'c-tool' : 'c-msg'));
+          setCount((i + 1) + ' item' + (i ? 's' : '') + ' — all relevant');
+        }, t + i * 620 + 340);
+      });
+      var afterScan = t + RELEVANT.length * 620 + 400;
+      later(function () { if (my === run) scan.classList.remove('on'); }, afterScan);
+      SAURON_STATE.forEach(function (ai, i) {
+        later(function () {
+          if (my !== run) return;
+          arts[ai].classList.add('is-picked');
+          flyIn(arts[ai], 'c-state');
+          setCount((RELEVANT.length + i + 1) + ' items — all relevant');
+        }, afterScan + 150 + i * 320);
+      });
+      later(function () {
+        if (my !== run) return;
+        flyIn(finalTick, 'c-final');
+        setCount('8 items, all load-bearing');
+      }, afterScan + 150 + SAURON_STATE.length * 320 + 200);
+
+    } else if (full) {
+      /* the dump: every event sweeps into context, relevant ones buried */
+      ticks.forEach(function (tick, i) {
+        later(function () {
+          if (my !== run) return;
+          tick.classList.add('is-carried');
+          var cls = tick === finalTick ? 'c-final' : ((RELEVANT.indexOf(i) !== -1 ? 'c-rel ' : 'c-irr ') + (PATTERN[i] === 'T' ? 'c-tool' : 'c-msg'));
+          flyIn(tick, cls, i % 2 === 1);   /* fly every other one; the rest pop — keeps it quick */
+          setCount((i + 1) + ' events loaded…');
+        }, t + i * 70);
+      });
+      var afterDump = t + ticks.length * 70 + 300;
+      if (active === 'gandalf') {
+        GANDALF_STATE.forEach(function (ai, i) {
+          later(function () {
+            if (my !== run) return;
+            arts[ai].classList.add('is-picked');
+            flyIn(arts[ai], 'c-state');
+          }, afterDump + i * 260);
+        });
+        afterDump += GANDALF_STATE.length * 260 + 200;
+      }
+      later(function () {
+        if (my !== run) return;
+        ctx.classList.add('overload');
+        var n = 33 + (active === 'gandalf' ? GANDALF_STATE.length : 0);
+        setCount(n + ' items — 27 irrelevant events');
+      }, afterDump);
+
+    } else if (active === 'gandalf') {
+      GANDALF_STATE.forEach(function (ai, i) {
+        later(function () {
+          if (my !== run) return;
+          arts[ai].classList.add('is-picked');
+          flyIn(arts[ai], 'c-state');
+          setCount((i + 1) + ' item' + (i ? 's' : ''));
+        }, t + i * 260);
+      });
+      later(function () {
+        if (my !== run) return;
+        flyIn(finalTick, 'c-final');
+        setCount('3 items, process-blind');
+      }, t + GANDALF_STATE.length * 260 + 250);
+
+    } else if (active === 'archipelago') {
+      /* diff + artifacts first, then the whole trajectory dumped in as text */
+      later(function () {
+        if (my !== run) return;
+        flyIn(document.querySelector('.diff-badge'), 'c-diff c-wide');
+        setCount('1 item — the before→after diff');
+      }, t + 250);
+      /* everything that changed lands in the diff — the relevant artifacts and the irrelevant ones alike */
+      ARCH_DIFF.forEach(function (ai, i) {
+        later(function () {
+          if (my !== run) return;
+          arts[ai].classList.add('is-picked');
+          if (SAURON_STATE.indexOf(ai) === -1) arts[ai].classList.add('is-irr');
+        }, t + 450 + i * 110);
+      });
+      var archDump = t + 450 + ARCH_DIFF.length * 110 + 250;
+      ticks.forEach(function (tick, i) {
+        later(function () {
+          if (my !== run) return;
+          tick.classList.add('is-carried');
+          var cls = tick === finalTick ? 'c-final' : ((RELEVANT.indexOf(i) !== -1 ? 'c-rel ' : 'c-irr ') + (PATTERN[i] === 'T' ? 'c-tool' : 'c-msg'));
+          flyIn(tick, cls, i % 2 === 1);
+          setCount((1 + i + 1) + ' items — trajectory loading…');
+        }, archDump + i * 70);
+      });
+      later(function () {
+        if (my !== run) return;
+        ctx.classList.add('overload');
+        setCount('34 items — the diff plus 27 irrelevant events');
+      }, archDump + ticks.length * 70 + 300);
+
+    } else { /* autorubric default */
+      later(function () {
+        if (my !== run) return;
+        flyIn(finalTick, 'c-final');
+        setCount('1 item — the final message');
+      }, t + 300);
+    }
+  }
+
+  /* ---------- wiring ---------- */
+  document.querySelectorAll('.verifier').forEach(function (b) {
+    b.addEventListener('click', function () { active = b.getAttribute('data-v'); apply(); });
+    // hover activates on pointer devices; click/tap covers touch + keyboard
+    b.addEventListener('pointerenter', function () {
+      if (!window.matchMedia('(hover: hover)').matches) return;
+      var v = b.getAttribute('data-v');
+      if (v !== active) { active = v; apply(); }
+    });
+  });
+  document.getElementById('mode-default').addEventListener('click', function () { mode = 'default'; apply(); });
+  document.getElementById('mode-fulltrace').addEventListener('click', function () {
+    if (!STATES[active].fulltrace) return;
+    mode = 'fulltrace'; apply();
+  });
+  document.getElementById('va-replay').addEventListener('click', apply);
+
+  var played = false;
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      if (entries.some(function (e) { return e.isIntersecting; }) && !played) {
+        played = true; apply(); io.disconnect();
+      }
+    }, { threshold: 0.35 });
+    io.observe(document.getElementById('fig1'));
+  } else { apply(); }
+})();
+</script>
+
+
+
+
+<script>
+/* FIGURE 3 — quality-vs-cost frontier, eight backbones (data: results_data.PA100, 2026-09-10) */
+(function () {
+  /* ---------- data ---------- */
+  var POINTS = [
+    { v: 'sauron', b: 'GPT-5.6 Sol', f1: 0.958, mcc: 0.940, cost: 297.69 },
+    { v: 'gandalf', b: 'GPT-5.6 Sol', f1: 0.923, mcc: 0.890, cost: 388.25 },
+    { v: 'archipelago', b: 'GPT-5.6 Sol', f1: 0.919, mcc: 0.885, cost: 2058.00 },
+    { v: 'autorubric', b: 'GPT-5.6 Sol', f1: 0.649, mcc: 0.479, cost: 76.09 },
+    { v: 'aaaj', b: 'GPT-5.6 Sol', f1: 0.521, mcc: 0.248, cost: 234.78 },
+    { v: 'sauron', b: 'Claude Fable 5.1', f1: 0.949, mcc: 0.928, cost: 414.70 },
+    { v: 'gandalf', b: 'Claude Fable 5.1', f1: 0.919, mcc: 0.886, cost: 449.62 },
+    { v: 'archipelago', b: 'Claude Fable 5.1', f1: 0.910, mcc: 0.873, cost: 2713.76 },
+    { v: 'autorubric', b: 'Claude Fable 5.1', f1: 0.677, mcc: 0.524, cost: 80.43 },
+    { v: 'aaaj', b: 'Claude Fable 5.1', f1: 0.546, mcc: 0.304, cost: 209.14 },
+    { v: 'sauron', b: 'Gemini 3.7 Flash', f1: 0.941, mcc: 0.917, cost: 59.79 },
+    { v: 'gandalf', b: 'Gemini 3.7 Flash', f1: 0.925, mcc: 0.894, cost: 84.69 },
+    { v: 'archipelago', b: 'Gemini 3.7 Flash', f1: 0.910, mcc: 0.872, cost: 447.00 },
+    { v: 'autorubric', b: 'Gemini 3.7 Flash', f1: 0.653, mcc: 0.485, cost: 8.67 },
+    { v: 'aaaj', b: 'Gemini 3.7 Flash', f1: 0.545, mcc: 0.406, cost: 25.55 },
+    { v: 'sauron', b: 'Kimi K3', f1: 0.937, mcc: 0.910, cost: 430.21 },
+    { v: 'gandalf', b: 'Kimi K3', f1: 0.888, mcc: 0.842, cost: 800.46 },
+    { v: 'archipelago', b: 'Kimi K3', f1: 0.897, mcc: 0.855, cost: 3191.00 },
+    { v: 'autorubric', b: 'Kimi K3', f1: 0.700, mcc: 0.563, cost: 43.89 },
+    { v: 'aaaj', b: 'Kimi K3', f1: 0.565, mcc: 0.336, cost: 216.97 },
+    { v: 'sauron', b: 'Claude Opus 5', f1: 0.935, mcc: 0.908, cost: 269.59 },
+    { v: 'gandalf', b: 'Claude Opus 5', f1: 0.900, mcc: 0.863, cost: 409.88 },
+    { v: 'archipelago', b: 'Claude Opus 5', f1: 0.909, mcc: 0.872, cost: 2386.00 },
+    { v: 'autorubric', b: 'Claude Opus 5', f1: 0.649, mcc: 0.478, cost: 87.61 },
+    { v: 'aaaj', b: 'Claude Opus 5', f1: 0.535, mcc: 0.278, cost: 193.47 },
+    { v: 'sauron', b: 'GPT-5.6 Terra', f1: 0.939, mcc: 0.912, cost: 64.44 },
+    { v: 'gandalf', b: 'GPT-5.6 Terra', f1: 0.903, mcc: 0.862, cost: 68.57 },
+    { v: 'archipelago', b: 'GPT-5.6 Terra', f1: 0.877, mcc: 0.827, cost: 423.00 },
+    { v: 'autorubric', b: 'GPT-5.6 Terra', f1: 0.651, mcc: 0.483, cost: 11.41 },
+    { v: 'aaaj', b: 'GPT-5.6 Terra', f1: 0.509, mcc: 0.222, cost: 44.45 },
+    { v: 'sauron', b: 'GPT-5.6 Luna', f1: 0.915, mcc: 0.879, cost: 7.80 },
+    { v: 'gandalf', b: 'GPT-5.6 Luna', f1: 0.884, mcc: 0.834, cost: 8.91 },
+    { v: 'archipelago', b: 'GPT-5.6 Luna', f1: 0.853, mcc: 0.791, cost: 48.40 },
+    { v: 'autorubric', b: 'GPT-5.6 Luna', f1: 0.637, mcc: 0.459, cost: 1.70 },
+    { v: 'aaaj', b: 'GPT-5.6 Luna', f1: 0.503, mcc: 0.214, cost: 4.97 },
+    { v: 'sauron', b: 'Claude Sonnet 5', f1: 0.909, mcc: 0.870, cost: 149.23 },
+    { v: 'gandalf', b: 'Claude Sonnet 5', f1: 0.901, mcc: 0.862, cost: 172.53 },
+    { v: 'archipelago', b: 'Claude Sonnet 5', f1: 0.885, mcc: 0.838, cost: 983.00 },
+    { v: 'autorubric', b: 'Claude Sonnet 5', f1: 0.653, mcc: 0.489, cost: 31.23 },
+    { v: 'aaaj', b: 'Claude Sonnet 5', f1: 0.523, mcc: 0.253, cost: 70.77 }
+  ];
+  var VERIFIERS = [
+    { key: 'sauron',      name: 'Sauron',           shape: 'circle' },
+    { key: 'gandalf',     name: 'Gandalf',          shape: 'square' },
+    { key: 'archipelago', name: 'Archipelago',      shape: 'cross' },
+    { key: 'aaaj',        name: 'Agent-as-a-Judge', shape: 'diamond' },
+    { key: 'autorubric',  name: 'AutoRubric',       shape: 'triangle' }
+  ];
+  var BACKBONES = [
+    { key: 'GPT-5.6 Sol',      short: 'GPT-5.6 Sol',   color: '#1F3A93' },
+    { key: 'GPT-5.6 Terra',    short: 'GPT-5.6 Terra', color: '#3B82D6' },
+    { key: 'GPT-5.6 Luna',     short: 'GPT-5.6 Luna',  color: '#7EC8F0' },
+    { key: 'Claude Fable 5.1', short: 'Fable 5.1',     color: '#8B1A1A' },
+    { key: 'Claude Opus 5',    short: 'Opus 5',        color: '#E8722A' },
+    { key: 'Claude Sonnet 5',  short: 'Sonnet 5',      color: '#E8B830' },
+    { key: 'Gemini 3.7 Flash', short: 'Gemini 3.7 Flash', color: '#1B9E5A' },
+    { key: 'Kimi K3',          short: 'Kimi K3',       color: '#C8309A' }
+  ];
+  function vinfo(k) { return VERIFIERS.filter(function (v) { return v.key === k; })[0]; }
+  function binfo(k) { return BACKBONES.filter(function (b) { return b.key === k; })[0]; }
+  // entrance order: verifier groups from weakest to strongest, so the story ends on Sauron
+  var VORDER = ['aaaj', 'autorubric', 'archipelago', 'gandalf', 'sauron'];
+  var STAGGER = 0.28, BASE_DELAY = 0.15;
+
+  /* ---------- geometry: broken y-axis, same ranges as the paper figure ---------- */
+  var W = 680, H = 500, M = { t: 22, r: 24, b: 52, l: 56 };
+  var XMIN = 1, XMAX = 6000;   // log scale, USD
+  var TOP = { lo: 0.84, hi: 0.975 }, BOT = { lo: 0.48, hi: 0.80 };   // panel ranges
+  var GAP = 22;                                                        // px between panels
+  var plotH = H - M.t - M.b - GAP;
+  var topH = plotH * 0.66, botH = plotH - topH;
+  var TOP_Y0 = M.t, TOP_Y1 = M.t + topH;                // top panel pixel span
+  var BOT_Y0 = TOP_Y1 + GAP, BOT_Y1 = BOT_Y0 + botH;    // bottom panel pixel span
+  function xPos(c) { return M.l + (Math.log10(c) - Math.log10(XMIN)) / (Math.log10(XMAX) - Math.log10(XMIN)) * (W - M.l - M.r); }
+  function yPos(f) {
+    if (f >= TOP.lo) return TOP_Y0 + (TOP.hi - f) / (TOP.hi - TOP.lo) * topH;
+    return BOT_Y0 + (BOT.hi - f) / (BOT.hi - BOT.lo) * botH;
+  }
+
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  function markShape(shape, parent, fill, outlined) {
+    var g = el('g', { 'class': 'pop' }, parent);
+    var m;
+    if (shape === 'circle')   m = el('circle', { r: outlined ? 7 : 6, 'class': 'mark' }, g);
+    if (shape === 'square')   m = el('rect', { x: -5, y: -5, width: 10, height: 10, 'class': 'mark' }, g);
+    if (shape === 'triangle') m = el('path', { d: 'M0,-6.5 L6,5 L-6,5 Z', 'class': 'mark' }, g);
+    if (shape === 'diamond')  m = el('path', { d: 'M0,-7 L7,0 L0,7 L-7,0 Z', 'class': 'mark' }, g);
+    if (shape === 'cross')    m = el('path', { d: 'M-5.5,-5.5 L5.5,5.5 M5.5,-5.5 L-5.5,5.5', 'class': 'mark', 'stroke-linecap': 'square' }, g);
+    if (shape === 'cross') { m.style.stroke = fill; m.style.strokeWidth = '3.2'; m.style.fill = 'none'; }
+    else { m.setAttribute('fill', fill); }
+    if (outlined) { m.style.stroke = 'var(--ink)'; m.style.strokeWidth = '1.6'; }
+    return g;
+  }
+
+  /* ---------- Pareto frontier over the agentic / snapshot verifiers ---------- */
+  function pareto() {
+    var pts = POINTS.filter(function (p) { return p.v === 'sauron' || p.v === 'gandalf' || p.v === 'archipelago'; })
+      .slice().sort(function (a, b) { return a.cost - b.cost; });
+    var front = [], best = -1;
+    pts.forEach(function (p) { if (p.f1 > best) { front.push(p); best = p.f1; } });
+    return front;
+  }
+
+  /* ---------- build chart ---------- */
+  var svg = document.getElementById('fr-svg');
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  var wrap = document.getElementById('fr-wrap');
+  var tip = document.getElementById('fr-tip');
+  var fig = document.getElementById('fig2');
+  var replayBtn = document.getElementById('fr-replay');
+
+  function build() {
+    svg.innerHTML = '';
+    // x gridlines + ticks (log decades), spanning both panels
+    [1, 10, 100, 1000].forEach(function (c) {
+      var x = xPos(c);
+      el('line', { x1: x, y1: TOP_Y0, x2: x, y2: TOP_Y1, 'class': 'fr-grid' }, svg);
+      el('line', { x1: x, y1: BOT_Y0, x2: x, y2: BOT_Y1, 'class': 'fr-grid' }, svg);
+      el('text', { x: x, y: BOT_Y1 + 16, 'text-anchor': 'middle', 'class': 'fr-tick-label' }, svg).textContent = c >= 1000 ? '$' + (c / 1000) + 'k' : '$' + c;
+    });
+    // y gridlines: top panel every 0.02, bottom every 0.1
+    for (var f = TOP.lo; f <= TOP.hi + 1e-9; f += 0.02) {
+      var y = yPos(f);
+      el('line', { x1: M.l, y1: y, x2: W - M.r, y2: y, 'class': 'fr-grid' }, svg);
+      el('text', { x: M.l - 8, y: y + 3, 'text-anchor': 'end', 'class': 'fr-tick-label' }, svg).textContent = f.toFixed(2);
+    }
+    for (var g2 = 0.5; g2 <= BOT.hi + 1e-9; g2 += 0.1) {
+      var yb = yPos(g2);
+      el('line', { x1: M.l, y1: yb, x2: W - M.r, y2: yb, 'class': 'fr-grid' }, svg);
+      el('text', { x: M.l - 8, y: yb + 3, 'text-anchor': 'end', 'class': 'fr-tick-label' }, svg).textContent = g2.toFixed(1);
+    }
+    // axes: y in two segments with break glyphs, x along the bottom panel
+    el('line', { x1: M.l, y1: TOP_Y0, x2: M.l, y2: TOP_Y1, 'class': 'fr-axis' }, svg);
+    el('line', { x1: M.l, y1: BOT_Y0, x2: M.l, y2: BOT_Y1, 'class': 'fr-axis' }, svg);
+    el('line', { x1: M.l, y1: BOT_Y1, x2: W - M.r, y2: BOT_Y1, 'class': 'fr-axis' }, svg);
+    el('line', { x1: M.l - 6, y1: TOP_Y1 + 5, x2: M.l + 6, y2: TOP_Y1 - 3, 'class': 'fr-axis' }, svg);
+    el('line', { x1: M.l - 6, y1: BOT_Y0 + 3, x2: M.l + 6, y2: BOT_Y0 - 5, 'class': 'fr-axis' }, svg);
+    el('text', { x: (M.l + W - M.r) / 2, y: H - 14, 'text-anchor': 'middle', 'class': 'fr-axis-title' }, svg).textContent = 'COST (USD, LOG) →';
+    var yt = el('text', { x: 0, y: 0, 'text-anchor': 'middle', 'class': 'fr-axis-title', transform: 'translate(14,' + ((TOP_Y0 + TOP_Y1) / 2) + ') rotate(-90)' }, svg);
+    yt.textContent = 'UNMET-F1 ↑';
+    el('text', { x: M.l + 8, y: TOP_Y0 - 6, 'text-anchor': 'start', 'class': 'fr-hint' }, svg).textContent = '↑ BETTER · ← CHEAPER';
+
+    // Pareto frontier: step line under the dots, revealed once all points have landed
+    var fr = pareto(), d = '';
+    fr.forEach(function (p, i) {
+      var x = xPos(p.cost), y = yPos(p.f1);
+      d += (i ? ' L' : 'M') + x + ' ' + y;
+      var nx = i + 1 < fr.length ? xPos(fr[i + 1].cost) : W - M.r;
+      d += ' L' + nx + ' ' + y;
+    });
+    var pd = (BASE_DELAY + VORDER.length * STAGGER + 0.35) + 's';   // after the last verifier group lands
+    var pp = el('path', { d: d, 'class': 'fr-pareto' }, svg); pp.style.setProperty('--pd', pd);
+    var pl = el('text', { x: W - M.r - 4, y: yPos(fr[fr.length - 1].f1) - 6, 'text-anchor': 'end', 'class': 'fr-hint fr-pareto-label' }, svg);
+    pl.textContent = 'PARETO FRONTIER'; pl.style.setProperty('--pd', pd);
+
+    // crosshair
+    var cross = el('g', { 'class': 'fr-cross', id: 'fr-cross' }, svg);
+    el('line', { id: 'cx-v' }, cross); el('line', { id: 'cx-h' }, cross);
+
+    // dots, grouped by verifier for the entrance stagger
+    VORDER.forEach(function (vk, oi) {
+      POINTS.filter(function (p) { return p.v === vk; }).forEach(function (p) {
+        var x = xPos(p.cost), y = yPos(p.f1);
+        var g = el('g', { 'class': 'fr-dot d-' + p.v, 'data-key': p.v, 'data-b': p.b, transform: 'translate(' + x + ',' + y + ')' }, svg);
+        g.style.setProperty('--d', (BASE_DELAY + oi * STAGGER) + 's');
+        var fly = el('g', { 'class': 'fly' }, g);
+        markShape(vinfo(p.v).shape, fly, binfo(p.b).color, p.v === 'sauron');
+        el('circle', { r: 14, 'class': 'halo' }, fly);
+        g.addEventListener('pointerenter', function () { showTip(p, x, y); });
+        g.addEventListener('pointerleave', hideTip);
+      });
+    });
+  }
+
+  /* ---------- tooltip + crosshair ---------- */
+  function showTip(p, x, y) {
+    highlight('v', p.v);
+    var rows = [
+      ['backbone', binfo(p.b).short],
+      ['F1', '<b>' + p.f1.toFixed(3) + '</b>'],
+      ['MCC', p.mcc.toFixed(3)],
+      ['cost', '$' + p.cost.toLocaleString(undefined, { maximumFractionDigits: 0 })]
+    ];
+    tip.innerHTML = '<div class="t-name"><span class="t-swatch" style="background:' + binfo(p.b).color + '"></span>' + vinfo(p.v).name + '</div>' +
+      rows.map(function (r) { return '<div class="t-row"><span>' + r[0] + '</span><span>' + r[1] + '</span></div>'; }).join('');
+    var wr = wrap.getBoundingClientRect(), sr = svg.getBoundingClientRect();
+    var px = sr.left - wr.left + x / W * sr.width, py = sr.top - wr.top + y / H * sr.height;
+    tip.style.left = Math.min(px + 14, wr.width - 190) + 'px';
+    tip.style.top = Math.max(py - 10, 0) + 'px';
+    tip.classList.add('on');
+    var cv = document.getElementById('cx-v'), ch = document.getElementById('cx-h');
+    cv.setAttribute('x1', x); cv.setAttribute('x2', x); cv.setAttribute('y1', y); cv.setAttribute('y2', BOT_Y1);
+    ch.setAttribute('x1', M.l); ch.setAttribute('x2', x); ch.setAttribute('y1', y); ch.setAttribute('y2', y);
+    document.getElementById('fr-cross').classList.add('on');
+  }
+  function hideTip() {
+    tip.classList.remove('on');
+    document.getElementById('fr-cross').classList.remove('on');
+    unhighlight();
+  }
+  /* highlight by verifier ('v') or by backbone ('b') */
+  function highlight(kind, key) {
+    svg.querySelectorAll('.fr-dot').forEach(function (g) {
+      var on = kind === 'v' ? g.getAttribute('data-key') === key : g.getAttribute('data-b') === key;
+      g.classList.toggle('is-dim', !on);
+    });
+    document.querySelectorAll('.fr-chip').forEach(function (c) {
+      var on = c.getAttribute('data-kind') === kind && c.getAttribute('data-key') === key;
+      c.classList.toggle('is-active', on);
+      c.classList.toggle('is-dim', c.getAttribute('data-kind') === kind && !on);
+    });
+  }
+  function unhighlight() {
+    svg.querySelectorAll('.fr-dot').forEach(function (g) { g.classList.remove('is-dim'); });
+    document.querySelectorAll('.fr-chip').forEach(function (c) { c.classList.remove('is-active', 'is-dim'); });
+  }
+
+  /* ---------- legends: verifiers (shape) and backbones (color) ---------- */
+  var legend = document.getElementById('fr-legend');
+  VERIFIERS.forEach(function (v) {
+    var chip = document.createElement('button');
+    chip.type = 'button'; chip.className = 'fr-chip'; chip.setAttribute('data-kind', 'v'); chip.setAttribute('data-key', v.key);
+    var s = document.createElementNS(NS, 'svg'); s.setAttribute('viewBox', '-8 -8 16 16');
+    markShape(v.shape, s, 'var(--ink-dim)', v.key === 'sauron');
+    chip.appendChild(s); chip.appendChild(document.createTextNode(v.name));
+    chip.addEventListener('pointerenter', function () { highlight('v', v.key); });
+    chip.addEventListener('pointerleave', unhighlight);
+    legend.appendChild(chip);
+  });
+  var legendB = document.getElementById('fr-legend-b');
+  var VENDORS = [['GPT', ['GPT-5.6 Sol', 'GPT-5.6 Terra', 'GPT-5.6 Luna']], ['Claude', ['Claude Fable 5.1', 'Claude Opus 5', 'Claude Sonnet 5']],
+                 ['Gemini', ['Gemini 3.7 Flash']], ['Kimi', ['Kimi K3']]];
+  VENDORS.forEach(function (vd) {
+    var col = document.createElement('div'); col.className = 'fr-vendor';
+    var h = document.createElement('span'); h.className = 'fr-vendor__name'; h.textContent = vd[0]; col.appendChild(h);
+    vd[1].forEach(function (bk) {
+      var b = binfo(bk);
+      var chip = document.createElement('button');
+      chip.type = 'button'; chip.className = 'fr-chip fr-chip--b'; chip.setAttribute('data-kind', 'b'); chip.setAttribute('data-key', b.key);
+      var sw = document.createElement('span'); sw.className = 'fr-swatch'; sw.style.background = b.color; chip.appendChild(sw);
+      chip.appendChild(document.createTextNode(b.short.replace(/^GPT-5\.6 /, '5.6 ').replace(/^Gemini /, '').replace(/^Kimi /, '')));
+      chip.addEventListener('pointerenter', function () { highlight('b', b.key); });
+      chip.addEventListener('pointerleave', unhighlight);
+      col.appendChild(chip);
+    });
+    legendB.appendChild(col);
+  });
+
+  /* ---------- entrance animation ---------- */
+  var played = false;
+  function arm() { fig.classList.add('fig-armed'); fig.classList.remove('fig-play'); replayBtn.classList.remove('on'); }
+  function play() {
+    fig.classList.add('fig-play');
+    var total = (BASE_DELAY + VORDER.length * STAGGER + 0.35 + 1.3) * 1000;
+    setTimeout(function () { replayBtn.classList.add('on'); }, total);
+  }
+  arm();
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      if (entries.some(function (e) { return e.isIntersecting; }) && !played) {
+        played = true; play(); io.disconnect();
+      }
+    }, { threshold: 0.45 });
+    io.observe(fig);
+  } else { play(); }
+  replayBtn.addEventListener('click', function () { arm(); void fig.offsetWidth; play(); });
+
+  build();
+  new MutationObserver(function () { build(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mode'] });
+})();
+</script>
+
+
+<script>
+/* FIGURE 3 — process-criteria bars (sandbox: figures/fig3-process-criteria.html) */
+(function () {
+  /* ---------- data (process-probe table 2026-08-10) ---------- */
+  var DATA = [
+    { key: 'sauron',      name: 'Sauron',           f1: 0.968 },
+    { key: 'gandalf',     name: 'Gandalf',          f1: 0.901 },
+    { key: 'archipelago', name: 'Archipelago',      f1: 0.883 },
+    { key: 'aaaj',        name: 'Agent-as-a-Judge', f1: 0.821 },
+    { key: 'autorubric',  name: 'AutoRubric',       f1: 0.771 }
+  ];
+  var STAGGER = 0.22, BASE_DELAY = 0.1;
+
+  /* ---------- geometry ---------- */
+  var W = 680, ROW_H = 30, GAP = 14, TOP = 10, AXIS_H = 34;
+  var LBL_W = 138, RPAD = 52;
+  var H = TOP + DATA.length * ROW_H + (DATA.length - 1) * GAP + AXIS_H;
+  var X0 = LBL_W, X1 = W - RPAD;
+  function xPos(v) { return X0 + v * (X1 - X0); }
+
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+  var svg = document.getElementById('pb-svg');
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  var wrap = document.getElementById('pb-wrap');
+  var tip = document.getElementById('pb-tip');
+  var fig = document.getElementById('fig3');
+  var replayBtn = document.getElementById('pb-replay');
+
+  function build() {
+    svg.innerHTML = '';
+    var plotBottom = TOP + DATA.length * ROW_H + (DATA.length - 1) * GAP;
+
+    // gridlines + ticks 0 … 1.0
+    for (var v = 0; v <= 1.0 + 1e-9; v += 0.2) {
+      var x = xPos(v);
+      el('line', { x1: x, y1: TOP, x2: x, y2: plotBottom, 'class': 'pb-grid' }, svg);
+      el('text', { x: x, y: plotBottom + 14, 'text-anchor': 'middle', 'class': 'pb-tick-label' }, svg).textContent = v.toFixed(1);
+    }
+    // baseline (x = 0) emphasized over grid
+    el('line', { x1: X0, y1: TOP, x2: X0, y2: plotBottom, 'class': 'pb-axis' }, svg);
+    el('text', { x: (X0 + X1) / 2, y: plotBottom + 28, 'text-anchor': 'middle', 'class': 'pb-axis-title' }, svg).textContent = 'F1 →';
+
+    // rows, drawn top-down; entrance delays run bottom-up so Sauron lands last
+    DATA.forEach(function (d, i) {
+      var y = TOP + i * (ROW_H + GAP);
+      var g = el('g', { 'class': 'pb-row r-' + d.key, 'data-key': d.key }, svg);
+      g.style.setProperty('--d', (BASE_DELAY + (DATA.length - 1 - i) * STAGGER) + 's');
+
+      el('text', { x: X0 - 10, y: y + ROW_H / 2 + 3.5, 'text-anchor': 'end', 'class': 'rlabel' }, g).textContent = d.name;
+
+      var bar = el('rect', {
+        x: X0 + 1, y: y + 2, width: xPos(d.f1) - X0 - 1, height: ROW_H - 4, 'class': 'bar'
+      }, g);
+      bar.style.fill = cssVar('--c-' + d.key);
+
+      el('text', { x: xPos(d.f1) + 8, y: y + ROW_H / 2 + 3.5, 'text-anchor': 'start', 'class': 'vlabel' }, g).textContent = d.f1.toFixed(3);
+
+      // full-row hit target
+      var hit = el('rect', { x: 0, y: y, width: W, height: ROW_H, 'class': 'hit' }, g);
+      hit.addEventListener('pointerenter', function () { showTip(d, xPos(d.f1), y + ROW_H / 2); });
+      hit.addEventListener('pointerleave', hideTip);
+    });
+  }
+
+  /* ---------- tooltip ---------- */
+  function showTip(d, x, y) {
+    svg.querySelectorAll('.pb-row').forEach(function (g) { g.classList.toggle('is-dim', g.getAttribute('data-key') !== d.key); });
+    var rows = [
+      ['F1', '<b>' + d.f1.toFixed(3) + '</b>']
+    ];
+    tip.innerHTML = '<div class="t-name"><span class="t-swatch" style="background:' + cssVar('--c-' + d.key) + '"></span>' + d.name + '</div>' +
+      rows.map(function (r) { return '<div class="t-row"><span>' + r[0] + '</span><span>' + r[1] + '</span></div>'; }).join('');
+    var wr = wrap.getBoundingClientRect(), sr = svg.getBoundingClientRect();
+    var px = sr.left - wr.left + x / W * sr.width, py = sr.top - wr.top + y / H * sr.height;
+    tip.style.left = Math.min(px - 60, wr.width - 190) + 'px';
+    tip.style.top = (py + 16) + 'px';
+    tip.classList.add('on');
+  }
+  function hideTip() {
+    tip.classList.remove('on');
+    svg.querySelectorAll('.pb-row').forEach(function (g) { g.classList.remove('is-dim'); });
+  }
+
+  /* ---------- entrance ---------- */
+  var played = false;
+  function arm() { fig.classList.add('fig-armed'); fig.classList.remove('fig-play'); replayBtn.classList.remove('on'); }
+  function play() {
+    fig.classList.add('fig-play');
+    var total = (BASE_DELAY + DATA.length * STAGGER + 0.75) * 1000;
+    setTimeout(function () { replayBtn.classList.add('on'); }, total);
+  }
+  arm();
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      if (entries.some(function (e) { return e.isIntersecting; }) && !played) {
+        played = true; play(); io.disconnect();
+      }
+    }, { threshold: 0.45 });
+    io.observe(fig);
+  } else { play(); }
+  replayBtn.addEventListener('click', function () {
+    arm(); void fig.offsetWidth; play();
+  });
+
+  build();
+  new MutationObserver(function () { build(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mode'] });
+
+})();
+</script>
+
+
+<script>
+/* FIGURE 4 — access-tier dot plot (sandbox: figures/fig4-access-tiers.html) */
+(function () {
+  /* ---------- data (fault-injection table 2026-09-10, per bundle; Agent-as-a-Judge and Archipelago in the paper) ---------- */
+  var GROUPS = [
+    {
+      label: 'STATE + NAVIGABLE TRACE',
+      rows: [
+        { key: 'sauron', name: 'Sauron', shape: 'circle', tier: 'nav', margin: 0.950, det: 0.970, fa: 0.020, cost: 0.215, clock: '30 s',
+          anno: '4.6× cheaper · 2.2× faster per bundle than full-trace Gandalf' }
+      ]
+    },
+    {
+      label: 'FULL TRACE INGESTED AS TEXT',
+      rows: [
+        { key: 'autorubric-text', name: 'AutoRubric', shape: 'triangle', tier: 'text', margin: 0.716, det: 0.841, fa: 0.126, cost: 0.263, clock: '14 s' },
+        { key: 'gandalf-text', name: 'Gandalf', shape: 'square', tier: 'text', margin: 0.675, det: 0.741, fa: 0.066, cost: 0.991, clock: '66 s' }
+      ]
+    },
+    {
+      label: 'TRAJECTORY-BLIND DEFAULT',
+      rows: [
+        { key: 'gandalf-default', name: 'Gandalf', shape: 'square', tier: 'blind', margin: 0.091, det: 0.524, fa: 0.433, cost: 0.671, clock: '140 s' },
+        { key: 'autorubric-default', name: 'AutoRubric', shape: 'triangle', tier: 'blind', margin: -0.166, det: 0.515, fa: 0.681, cost: 0.016, clock: '14 s' }
+      ]
+    }
+  ];
+  var STAGGER = 0.2, BASE_DELAY = 0.1;
+
+  /* ---------- geometry ---------- */
+  var W = 680, ROW_H = 30, GROUP_H = 24, GROUP_GAP = 10, TOP = 6, AXIS_H = 34, ANNO_H = 16;
+  var LBL_W = 118, RPAD = 56;
+  var X0 = LBL_W, X1 = W - RPAD;
+  var VMIN = -0.2, VMAX = 1.0;
+  function xPos(v) { return X0 + (v - VMIN) / (VMAX - VMIN) * (X1 - X0); }
+  function fmtMargin(v) { return (v < 0 ? '\u2212' : '') + Math.abs(v).toFixed(3); }
+
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+  function entityColor(key) { return cssVar('--c-' + key.split('-')[0]); }
+
+  function markShape(shape, parent, tint, hollow) {
+    var g = el('g', { 'class': 'pop' }, parent);
+    var m;
+    if (shape === 'circle')   m = el('circle', { r: 6.5, 'class': 'mark' }, g);
+    if (shape === 'square')   m = el('rect', { x: -5.5, y: -5.5, width: 11, height: 11, 'class': 'mark' }, g);
+    if (shape === 'triangle') m = el('path', { d: 'M0,-7 L6.5,5.5 L-6.5,5.5 Z', 'class': 'mark' }, g);
+    if (hollow) m.style.stroke = tint; else m.style.fill = tint;
+    return g;
+  }
+
+  /* ---------- flatten rows with y positions ---------- */
+  var flat = [];
+  var y = TOP;
+  GROUPS.forEach(function (grp, gi) {
+    grp.y = y; y += GROUP_H;
+    grp.rows.forEach(function (r) {
+      r.rowY = y; y += ROW_H;
+      if (r.anno) { r.annoY = y; y += ANNO_H; }
+      flat.push(r);
+    });
+    grp.yEnd = y;
+    if (gi < GROUPS.length - 1) y += GROUP_GAP;
+  });
+  var PLOT_BOTTOM = y;
+  var H = PLOT_BOTTOM + AXIS_H;
+
+  var svg = document.getElementById('at-svg');
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  var wrap = document.getElementById('at-wrap');
+  var tip = document.getElementById('at-tip');
+  var fig = document.getElementById('fig4');
+  var replayBtn = document.getElementById('at-replay');
+  var N = flat.length;
+
+  function build() {
+    svg.innerHTML = '';
+
+    // gridlines + ticks −0.2 … 1.0
+    for (var v = VMIN; v <= VMAX + 1e-9; v += 0.2) {
+      var x = xPos(v);
+      el('line', { x1: x, y1: TOP, x2: x, y2: PLOT_BOTTOM, 'class': 'at-grid' }, svg);
+      el('text', { x: x, y: PLOT_BOTTOM + 14, 'text-anchor': 'middle', 'class': 'at-tick-label' }, svg).textContent = (Math.abs(v) < 1e-9 ? 0 : v).toFixed(1).replace('-', '\u2212');
+    }
+    el('line', { x1: X0, y1: TOP, x2: X0, y2: PLOT_BOTTOM, 'class': 'at-axis' }, svg);
+    el('text', { x: (X0 + X1) / 2, y: PLOT_BOTTOM + 28, 'text-anchor': 'middle', 'class': 'at-axis-title' }, svg).textContent = 'Δfault (detection − false alarm) →';
+
+    GROUPS.forEach(function (grp, gi) {
+      // group header + separator above (except first)
+      if (gi > 0) el('line', { x1: 0, y1: grp.y - GROUP_GAP / 2, x2: W, y2: grp.y - GROUP_GAP / 2, 'class': 'at-sep' }, svg);
+      // surface backing so the axis/grid lines don't strike through the label
+      var back = el('rect', { x: 0, y: grp.y + 4, width: grp.label.length * 6.4 + 8, height: 14 }, svg);
+      back.style.fill = cssVar('--background') || '#fff';
+      el('text', { x: 0, y: grp.y + 14, 'text-anchor': 'start', 'class': 'at-group' }, svg).textContent = grp.label;
+
+      grp.rows.forEach(function (d) {
+        var cy = d.rowY + ROW_H / 2;
+        var cx = xPos(d.margin);
+        var g = el('g', { 'class': 'at-row t-' + d.tier + ' r-' + (d.key === 'sauron' ? 'sauron' : d.key), 'data-key': d.key }, svg);
+        // entrance order: bottom row first, Sauron last
+        var oi = N - 1 - flat.indexOf(d);
+        g.style.setProperty('--d', (BASE_DELAY + oi * STAGGER) + 's');
+
+        el('text', { x: X0 - 10, y: cy + 3.5, 'text-anchor': 'end', 'class': 'rlabel' }, g).textContent = d.name;
+
+        // position on an outer group — the CSS pop animation owns the inner
+        // group's transform and would override an attribute translate there
+        var holder = el('g', { transform: 'translate(' + cx + ',' + cy + ')' }, g);
+        markShape(d.shape, holder, entityColor(d.key), d.tier === 'blind');
+
+        el('text', { x: cx + 13, y: cy + 3.5, 'text-anchor': 'start', 'class': 'vlabel' }, g).textContent = fmtMargin(d.margin);
+
+        if (d.anno) {
+          var anno = el('text', { x: cx - 13, y: cy + 3.5, 'text-anchor': 'end', 'class': 'at-anno' }, g);
+          anno.textContent = d.anno;
+        }
+
+        var hit = el('rect', { x: 0, y: d.rowY, width: W, height: ROW_H, 'class': 'hit' }, g);
+        hit.addEventListener('pointerenter', function () { showTip(d, cx, cy); });
+        hit.addEventListener('pointerleave', hideTip);
+      });
+    });
+  }
+
+  /* ---------- tooltip ---------- */
+  var TIER_LABEL = { nav: 'state + navigable trace', text: 'full trace as text', blind: 'trajectory-blind default' };
+  function showTip(d, x, y) {
+    svg.querySelectorAll('.at-row').forEach(function (g) { g.classList.toggle('is-dim', g.getAttribute('data-key') !== d.key); });
+    tip.innerHTML = '<div class="t-name"><span class="t-swatch" style="background:' + entityColor(d.key) + '"></span>' + d.name + '</div>' +
+      '<div class="t-sub">' + TIER_LABEL[d.tier] + '</div>' +
+      '<div class="t-row"><span>Δfault</span><span><b>' + fmtMargin(d.margin) + '</b></span></div>' +
+      '<div class="t-row"><span>detection</span><span>' + d.det.toFixed(3) + '</span></div>' +
+      '<div class="t-row"><span>false alarm</span><span>' + d.fa.toFixed(3) + '</span></div>' +
+      '<div class="t-row"><span>$ / bundle</span><span>$' + d.cost.toFixed(3) + '</span></div>' +
+      '<div class="t-row"><span>latency / bundle</span><span>' + d.clock + '</span></div>';
+    var wr = wrap.getBoundingClientRect(), sr = svg.getBoundingClientRect();
+    var px = sr.left - wr.left + x / W * sr.width, py = sr.top - wr.top + y / H * sr.height;
+    tip.style.left = Math.min(Math.max(px - 60, 0), wr.width - 170) + 'px';
+    tip.style.top = (py + 16) + 'px';
+    tip.classList.add('on');
+  }
+  function hideTip() {
+    tip.classList.remove('on');
+    svg.querySelectorAll('.at-row').forEach(function (g) { g.classList.remove('is-dim'); });
+  }
+
+  /* ---------- entrance ---------- */
+  var played = false;
+  function arm() { fig.classList.add('fig-armed'); fig.classList.remove('fig-play'); replayBtn.classList.remove('on'); }
+  function play() {
+    fig.classList.add('fig-play');
+    fig.style.setProperty('--anno-d', (BASE_DELAY + N * STAGGER + 0.35) + 's');
+    var total = (BASE_DELAY + N * STAGGER + 1.0) * 1000;
+    setTimeout(function () { replayBtn.classList.add('on'); }, total);
+  }
+  arm();
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      if (entries.some(function (e) { return e.isIntersecting; }) && !played) {
+        played = true; play(); io.disconnect();
+      }
+    }, { threshold: 0.45 });
+    io.observe(fig);
+  } else { play(); }
+  replayBtn.addEventListener('click', function () { arm(); void fig.offsetWidth; play(); });
+
+  build();
+  new MutationObserver(function () { build(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mode'] });
+
+})();
+</script>
+
+
+
+
+<script>
+/* FIGURE 6 — speed under concurrency (sandbox: figures/fig6-concurrency.html) */
+(function () {
+  /* ---------- data (user table, seconds) ---------- */
+  var WORKERS = [1, 2, 4, 8];
+  var SERIES = [
+    { key: 'gandalf', name: 'Gandalf', shape: 'square', secs: [4260, 1366, 715, 468], d: 0.15 },
+    { key: 'sauron', name: 'Sauron', shape: 'circle', secs: [1023, 585, 302, 219], d: 0.75 }
+  ];
+  function mins(s) { return s / 60; }
+
+  /* ---------- geometry ---------- */
+  var W = 680, H = 380, M = { t: 18, r: 96, b: 52, l: 56 };
+  // log y: on a log scale, vertical distance IS the ratio — the saturation
+  // gap at 8 workers stays visibly open instead of collapsing to ~7px
+  var YMIN = 3.0, YMAX = 90; // minutes
+  function xPos(w) { return M.l + (Math.log2(w)) / 3 * (W - M.l - M.r); }
+  function yPos(min) {
+    var t = (Math.log(YMAX) - Math.log(min)) / (Math.log(YMAX) - Math.log(YMIN));
+    return M.t + t * (H - M.t - M.b);
+  }
+
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+  function color(key) { return cssVar('--c-' + key); }
+  function fmtMin(s) { return (Math.round(s / 6) / 10).toFixed(1) + ' min'; }  /* half-up: 213 s → 3.6 */
+
+  var svg = document.getElementById('cc-svg');
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  var wrap = document.getElementById('cc-wrap');
+  var tip = document.getElementById('cc-tip');
+  var fig = document.getElementById('fig6');
+  var replayBtn = document.getElementById('cc-replay');
+
+  function build() {
+    svg.innerHTML = '';
+
+    // grid + ticks
+    WORKERS.forEach(function (w) {
+      var x = xPos(w);
+      el('line', { x1: x, y1: M.t, x2: x, y2: H - M.b, 'class': 'cc-grid' }, svg);
+      el('text', { x: x, y: H - M.b + 20, 'text-anchor': 'middle', 'class': 'cc-tick-label' }, svg).textContent = w;
+    });
+    [5, 10, 20, 50, 80].forEach(function (m) {
+      var y = yPos(m);
+      el('line', { x1: M.l, y1: y, x2: W - M.r, y2: y, 'class': 'cc-grid' }, svg);
+      el('text', { x: M.l - 8, y: y + 3, 'text-anchor': 'end', 'class': 'cc-tick-label' }, svg).textContent = m;
+    });
+    el('line', { x1: M.l, y1: H - M.b, x2: W - M.r, y2: H - M.b, 'class': 'cc-axis' }, svg);
+    el('line', { x1: M.l, y1: M.t, x2: M.l, y2: H - M.b, 'class': 'cc-axis' }, svg);
+    el('text', { x: (M.l + W - M.r) / 2, y: H - 14, 'text-anchor': 'middle', 'class': 'cc-axis-title' }, svg).textContent = 'CONCURRENT WORKERS →';
+    var yt = el('text', { x: 0, y: 0, 'text-anchor': 'middle', 'class': 'cc-axis-title', transform: 'translate(14,' + ((M.t + H - M.b) / 2) + ') rotate(-90)' }, svg);
+    yt.textContent = 'WALL-CLOCK (MIN, LOG) ↓ BETTER';
+
+    // column hover guide
+    var col = el('g', { 'class': 'cc-col', id: 'cc-col' }, svg);
+    el('line', { id: 'cc-col-line' }, col);
+
+    // series
+    SERIES.forEach(function (s) {
+      var g = el('g', { 'class': 'cc-series s-' + s.key, 'data-key': s.key }, svg);
+      g.style.setProperty('--d', s.d + 's');
+
+      var pts = WORKERS.map(function (w, i) { return [xPos(w), yPos(mins(s.secs[i]))]; });
+      var dstr = pts.map(function (p, i) { return (i ? 'L' : 'M') + ' ' + p[0] + ' ' + p[1]; }).join(' ');
+      var line = el('path', { d: dstr, 'class': 'line' }, g);
+      line.style.stroke = color(s.key);
+      var len = line.getTotalLength();
+      line.style.setProperty('--len', len);
+
+      pts.forEach(function (p, i) {
+        var holder = el('g', { transform: 'translate(' + p[0] + ',' + p[1] + ')' }, g);
+        var mk;
+        if (s.shape === 'circle') mk = el('circle', { r: 5, 'class': 'pt' }, holder);
+        else mk = el('rect', { x: -4.5, y: -4.5, width: 9, height: 9, 'class': 'pt' }, holder);
+        mk.style.fill = color(s.key);
+        mk.style.setProperty('--pd', (0.15 + i * 0.22) + 's');
+        // per-point minute labels — above for gandalf, below for sauron;
+        // Gandalf's first point hugs the y-axis, so its label dodges right
+        var plx = 0, ply = s.key === 'gandalf' ? -12 : 20, pla = 'middle';
+        if (s.key === 'gandalf' && i === 0) { plx = 9; ply = -14; pla = 'start'; }
+        if (s.key === 'sauron' && i === WORKERS.length - 1) { plx = 10; ply = 4; pla = 'start'; }
+        var pl = el('text', { x: plx, y: ply, 'text-anchor': pla, 'class': 'plabel' }, holder);
+        pl.textContent = (Math.round(s.secs[i] / 6) / 10).toFixed(1);
+        pl.style.setProperty('--pd', (0.2 + i * 0.22) + 's');
+      });
+
+      // series label at line end — lines converge at 8 workers, so spread them
+      var last = pts[pts.length - 1];
+      var slDy = s.key === 'gandalf' ? -6 : 18;
+      var sl = el('text', { x: last[0] + 14, y: last[1] + slDy, 'text-anchor': 'start', 'class': 'slabel' }, g);
+      sl.textContent = s.name;
+      sl.style.setProperty('--pd', '0.9s');
+    });
+
+    // gap rulers — the persistent Sauron advantage, drawn and labeled per column
+    var gS = SERIES.filter(function (s) { return s.key === 'sauron'; })[0];
+    var gG = SERIES.filter(function (s) { return s.key === 'gandalf'; })[0];
+    WORKERS.forEach(function (w, i) {
+      var x = xPos(w);
+      var yS = yPos(mins(gS.secs[i])), yG = yPos(mins(gG.secs[i]));
+      var grp = el('g', { 'class': 'cc-gap' }, svg);
+      grp.style.setProperty('--pd', (1.5 + i * 0.15) + 's');
+      el('line', { x1: x, y1: yG + 8, x2: x, y2: yS - 8, 'class': 'gap-line' }, grp);
+      var last = i === WORKERS.length - 1;
+      var t = el('text', {
+        x: last ? x - 7 : x + 6,
+        y: (yS + yG) / 2 + 3,
+        'text-anchor': last ? 'end' : 'start',
+        'class': 'gap-label'
+      }, grp);
+      t.textContent = (gG.secs[i] / gS.secs[i]).toFixed(1) + '\u00d7';
+    });
+
+    // invisible column hit zones
+    WORKERS.forEach(function (w, i) {
+      var x = xPos(w);
+      var x0 = i === 0 ? M.l : (xPos(WORKERS[i - 1]) + x) / 2;
+      var x1 = i === WORKERS.length - 1 ? W - M.r : (x + xPos(WORKERS[i + 1])) / 2;
+      var hz = el('rect', { x: x0, y: M.t, width: x1 - x0, height: H - M.t - M.b, fill: 'transparent' }, svg);
+      hz.addEventListener('pointerenter', function () { showCol(i); });
+      hz.addEventListener('pointerleave', hideCol);
+    });
+  }
+
+  /* ---------- column tooltip ---------- */
+  function showCol(i) {
+    var w = WORKERS[i], x = xPos(w);
+    var gS = SERIES.filter(function (s) { return s.key === 'sauron'; })[0];
+    var gG = SERIES.filter(function (s) { return s.key === 'gandalf'; })[0];
+    var ratio = (gG.secs[i] / gS.secs[i]).toFixed(1);
+    tip.innerHTML = '<div class="t-name">' + w + (w === 1 ? ' worker' : ' workers') + '</div>' +
+      '<div class="t-row"><span><span class="dot" style="background:' + color('sauron') + '"></span>Sauron</span><span><b>' + fmtMin(gS.secs[i]) + '</b></span></div>' +
+      '<div class="t-row"><span><span class="dot" style="background:' + color('gandalf') + '"></span>Gandalf</span><span>' + fmtMin(gG.secs[i]) + '</span></div>' +
+      '<div class="t-row"><span>sauron faster by</span><span><b>' + ratio + '×</b></span></div>';
+    var wr = wrap.getBoundingClientRect(), sr = svg.getBoundingClientRect();
+    var px = sr.left - wr.left + x / W * sr.width;
+    var py = sr.top - wr.top + yPos(mins(gS.secs[i])) / H * sr.height;
+    tip.style.left = Math.min(px + 14, wr.width - 200) + 'px';
+    tip.style.top = Math.max(py - 30, 0) + 'px';
+    tip.classList.add('on');
+    var cl = document.getElementById('cc-col-line');
+    cl.setAttribute('x1', x); cl.setAttribute('x2', x);
+    cl.setAttribute('y1', M.t); cl.setAttribute('y2', H - M.b);
+    document.getElementById('cc-col').classList.add('on');
+  }
+  function hideCol() {
+    tip.classList.remove('on');
+    document.getElementById('cc-col').classList.remove('on');
+  }
+
+  /* ---------- legend ---------- */
+  var legend = document.getElementById('cc-legend');
+  SERIES.slice().reverse().forEach(function (s) {
+    var chip = document.createElement('button');
+    chip.type = 'button'; chip.className = 'cc-chip'; chip.setAttribute('data-key', s.key);
+    var sw = document.createElement('span'); sw.className = 'swatch'; sw.style.background = color(s.key);
+    chip.appendChild(sw);
+    chip.appendChild(document.createTextNode(s.name));
+    chip.addEventListener('pointerenter', function () {
+      document.querySelectorAll('.cc-series').forEach(function (g) { g.classList.toggle('is-dim', g.getAttribute('data-key') !== s.key); });
+      document.querySelectorAll('.cc-chip').forEach(function (c) {
+        var on = c.getAttribute('data-key') === s.key;
+        c.classList.toggle('is-active', on); c.classList.toggle('is-dim', !on);
+      });
+    });
+    chip.addEventListener('pointerleave', function () {
+      document.querySelectorAll('.cc-series').forEach(function (g) { g.classList.remove('is-dim'); });
+      document.querySelectorAll('.cc-chip').forEach(function (c) { c.classList.remove('is-active', 'is-dim'); });
+    });
+    legend.appendChild(chip);
+  });
+
+  /* ---------- entrance ---------- */
+  var played = false;
+  function arm() { fig.classList.add('fig-armed'); fig.classList.remove('fig-play'); replayBtn.classList.remove('on'); }
+  function play() {
+    fig.classList.add('fig-play');
+    setTimeout(function () { replayBtn.classList.add('on'); }, 2300);
+  }
+  arm();
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      if (entries.some(function (e) { return e.isIntersecting; }) && !played) {
+        played = true; play(); io.disconnect();
+      }
+    }, { threshold: 0.45 });
+    io.observe(fig);
+  } else { play(); }
+  replayBtn.addEventListener('click', function () { arm(); void fig.offsetWidth; play(); });
+
+  build();
+  new MutationObserver(function () { build(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mode'] });
+
+})();
+</script>
+
+
+<script>
+/* FIGURE 7 — admission gate (sandbox: figures/fig7-admission-gate.html) */
+(function () {
+  /* ---------- the 2×2 states ---------- */
+  var STATES = {
+    'mechanical.admitted': {
+      claim: 'All six <code>web_search</code> calls in this run failed with HTTP 429.',
+      type: '<code>tool-call-outcome</code>',
+      loc: '<code>trace://events/31–42 · tool=web_search</code>',
+      events: [
+        { id: '#31', txt: '→ 429', ok: true },
+        { id: '#34', txt: '→ 429', ok: true },
+        { id: '#36', txt: '→ 429', ok: true },
+        { id: '#38', txt: '→ 429', ok: true },
+        { id: '#40', txt: '→ 429', ok: true },
+        { id: '#42', txt: '→ 429', ok: true }
+      ],
+      checkHead: 'check — mechanical',
+      checkLine: 'claim expects: <b>429 on all six</b> — comparing…',
+      checkTally: function (ok, total) { return '<b>' + ok + '/' + total + ' match</b> — the claim is exactly what the events say.'; },
+      stamp: { cls: 's-ok', txt: 'Supported ✓' },
+      result: '<b>Admitted</b> — 6/6 statuses match the claim.',
+      receipt: '⊞ web_search-429 attached as receipt',
+      vnote: '“search was rate-limited” can now be awarded — this atom is the receipt.'
+    },
+    'mechanical.rejected': {
+      claim: '<code>web_search</code> succeeded and returned results.',
+      type: '<code>tool-call-outcome</code>',
+      loc: '<code>trace://events/31–42 · tool=web_search</code>',
+      events: [
+        { id: '#31', txt: '→ 429', ok: false },
+        { id: '#34', txt: '→ 429', ok: false },
+        { id: '#36', txt: '→ 429', ok: false },
+        { id: '#38', txt: '→ 429', ok: false },
+        { id: '#40', txt: '→ 429', ok: false },
+        { id: '#42', txt: '→ 429', ok: false }
+      ],
+      checkHead: 'check — mechanical',
+      checkLine: 'claim expects: <b>at least one 200</b> — comparing…',
+      checkTally: function () { return '<b>0/6 match</b> — only 429 failures exist.'; },
+      stamp: { cls: 's-no', txt: 'Unsupported ✕' },
+      result: '<b>Rejected</b> — no successful call exists, however plausible the claim sounded.',
+      vnote: 'the judge cannot cite this atom.'
+    },
+    'faithfulness.admitted': {
+      claim: 'After search was rate-limited, the agent fell back to the cached snapshot.',
+      type: '<code>trace-span</code>',
+      loc: '<code>trace://events/43–47</code>',
+      srcLines: [
+        { tag: 'agent', txt: '“web_search is rate-limited; falling back to the cached snapshot in data/cache.json”' },
+        { tag: 'tool', txt: 'read_file("data/cache.json") → ok' }
+      ],
+      isoSrc: '“…falling back to the cached snapshot” · read_file → ok',
+      checkHead: 'check — isolated faithfulness',
+      isoNote: 'the checker sees only:',
+      question: 'does the source support the claim?',
+      stamp: { cls: 's-ok', txt: 'Supported ✓' },
+      result: '<b>Admitted</b> — the excerpt supports the paraphrase.',
+      receipt: '⊞ fallback-to-cache attached as receipt',
+      vnote: 'the recovery behavior can now be credited — this atom is the receipt.'
+    },
+    'faithfulness.rejected': {
+      claim: 'The export to <code>report.pdf</code> completed successfully.',
+      type: '<code>trace-span</code>',
+      loc: '<code>trace://events/58 · tool=export_pdf</code>',
+      srcLines: [
+        { tag: 'tool', txt: 'export_pdf(path="report.pdf") called' },
+        { tag: 'span', txt: 'ends — no completion status, no artifact check' }
+      ],
+      isoSrc: 'export_pdf called · span ends — no status',
+      checkHead: 'check — isolated faithfulness',
+      isoNote: 'the checker sees only:',
+      question: 'does the source support the claim?',
+      stamp: { cls: 's-no', txt: 'Unsupported ✕' },
+      result: '<b>Rejected</b> — the source proves the call, not that it succeeded.',
+      vnote: 'to credit the export, Sauron must probe state for report.pdf itself — a claim is not a receipt.'
+    }
+  };
+
+  var fig = document.getElementById('fig7');
+  var timers = [];
+  function later(fn, t) { timers.push(setTimeout(fn, t)); }
+  function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function $(id) { return document.getElementById(id); }
+  function lit(id) { $(id).classList.add('lit'); }
+
+  function run() {
+    clearTimers();
+    var route = fig.getAttribute('data-route');
+    var outcome = fig.getAttribute('data-outcome');
+    var mech = route === 'mechanical';
+    var admitted = outcome === 'admitted';
+    var s = STATES[route + '.' + outcome];
+
+    /* ----- reset ----- */
+    ['n-atom','n-resolve','n-mech','n-faith','n-gate','e-0','e-mech','e-faith','e-gate-mech','e-gate-faith','e-exit','e-exit-x','e-check-result','h-1','h-2'].forEach(function (id) {
+      $(id).classList.remove('lit');
+    });
+    $('n-mech').classList.toggle('route-off', !mech);
+    $('n-faith').classList.toggle('route-off', mech);
+    $('n-gate').setAttribute('data-g', outcome);
+    ['s-claim','s-meta','s-source','s-check','s-result'].forEach(function (id) { $(id).classList.remove('in'); });
+    $('x-resolve').classList.remove('in','ok');
+    $('x-resolve').textContent = 'resolving…';
+    $('r-receipt').classList.remove('in');
+    document.querySelector('.ag-chip.c-stopped').classList.remove('in');
+    $('x-vnote').textContent = 'cites admitted atoms only';
+
+    /* ----- content ----- */
+    $('x-claim').innerHTML = s.claim;
+    $('x-type').innerHTML = s.type;
+    $('x-loc').innerHTML = s.loc;
+    if (s.receipt) $('r-receipt').textContent = s.receipt;
+    $('x-checkhead').textContent = s.checkHead;
+    $('x-result').className = 'ag-result ' + (admitted ? 'r-ok' : 'r-no');
+    $('x-result').innerHTML = s.result;
+
+    var body = $('x-srcbody');
+    if (mech) {
+      body.innerHTML = '<div class="ag-events">' + s.events.map(function (e, i) {
+        return '<div class="ag-ev" data-i="' + i + '"><span>' + e.id + ' ' + e.txt + '</span><span class="ev-mark">' + (e.ok ? '✓' : '✕') + '</span></div>';
+      }).join('') + '</div>';
+      $('x-srchead').textContent = 'source · 6 events located';
+      $('x-checkbody').innerHTML = '<div class="c-line" id="x-checkline">' + s.checkLine + '</div><div class="c-line" id="x-tally" style="margin-top:.35rem"></div>' +
+        '<span class="ag-stamp ' + s.stamp.cls + '" id="x-stamp">' + s.stamp.txt + '</span>';
+    } else {
+      body.innerHTML = s.srcLines.map(function (l) {
+        return '<div class="src-line"><span class="src-tag">' + l.tag + '</span><span class="src-txt">' + l.txt + '</span></div>';
+      }).join('');
+      $('x-srchead').textContent = 'source · span resolved';
+      $('x-checkbody').innerHTML =
+        '<div class="c-line">' + s.isoNote + '</div>' +
+        '<div class="ag-iso">' +
+          '<div class="iso-box"><div class="iso-key">claim</div><div class="iso-val">' + s.claim + '</div></div>' +
+          '<div class="iso-box"><div class="iso-key">source</div><div class="iso-val">' + s.isoSrc + '</div></div>' +
+        '</div>' +
+        '<div class="c-line">' + s.question + '</div>' +
+        '<span class="ag-stamp ' + s.stamp.cls + '" id="x-stamp">' + s.stamp.txt + '</span>';
+    }
+
+    /* ----- synchronized timeline ----- */
+    var T = reduced ? function () { return 0; } : function (t) { return t; };
+
+    later(function () { $('s-claim').classList.add('in'); lit('n-atom'); }, T(60));
+    later(function () { $('s-meta').classList.add('in'); lit('e-0'); }, T(420));
+    later(function () { $('x-resolve').classList.add('in'); lit('n-resolve'); }, T(760));
+    later(function () { $('x-resolve').textContent = 'resolved ✓'; $('x-resolve').classList.add('ok'); }, T(1150));
+    later(function () {
+      lit('h-1'); $('s-source').classList.add('in');
+      lit(mech ? 'e-mech' : 'e-faith'); lit(mech ? 'n-mech' : 'n-faith');
+    }, T(1350));
+
+    var checkStart = T(1950);
+    later(function () { lit('h-2'); $('s-check').classList.add('in'); }, checkStart);
+    var resultAt;
+    if (mech) {
+      var per = reduced ? 0 : 240;
+      s.events.forEach(function (e, i) {
+        later(function () {
+          var row = body.querySelectorAll('.ag-ev')[i];
+          row.classList.add('checked', e.ok ? 'm-ok' : 'm-no');
+        }, checkStart + T(350) + i * per);
+      });
+      resultAt = checkStart + T(350) + 6 * (reduced ? 0 : 240) + T(650);
+      later(function () {
+        $('x-tally').innerHTML = s.checkTally(s.events.filter(function (e) { return e.ok; }).length, s.events.length);
+      }, resultAt - T(520));
+      later(function () { $('x-stamp').classList.add('in'); }, resultAt - T(220));
+    } else {
+      later(function () { $('x-stamp').classList.add('in'); }, checkStart + T(900));
+      resultAt = checkStart + T(1400);
+    }
+
+    later(function () {
+      $('s-result').classList.add('in');
+      lit(mech ? 'e-gate-mech' : 'e-gate-faith'); lit('n-gate'); lit('e-check-result');
+    }, resultAt);
+
+    later(function () {
+      $('x-vnote').textContent = s.vnote;
+      if (admitted) {
+        lit('e-exit'); lit('e-exit-x');
+        $('r-receipt').classList.add('in');
+      } else {
+        document.querySelector('.ag-chip.c-stopped').classList.add('in');
+      }
+    }, resultAt + T(450));
+  }
+
+  /* ---------- wiring ---------- */
+  document.querySelectorAll('.ag-seg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var group = b.getAttribute('data-set');
+      fig.setAttribute('data-' + group, b.getAttribute('data-val'));
+      document.querySelectorAll('.ag-seg button[data-set="' + group + '"]').forEach(function (o) {
+        o.setAttribute('aria-pressed', String(o === b));
+      });
+      run();
+    });
+  });
+  document.getElementById('ag-replay').addEventListener('click', run);
+
+  var played = false;
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      if (entries.some(function (e) { return e.isIntersecting; }) && !played) {
+        played = true; run(); io.disconnect();
+      }
+    }, { threshold: 0.35 });
+    io.observe(fig);
+  } else { run(); }
+
+})();
+</script>
+
+</body>
+</html>

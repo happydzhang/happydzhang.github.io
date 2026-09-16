@@ -77,6 +77,11 @@
   p { color: var(--text-soft); margin-bottom: 10px; }
   p b, p strong { color: var(--text); font-weight: 600; }
 
+  /* ---------- News ---------- */
+  .news { list-style: none; }
+  .news li { display: flex; gap: 14px; padding: 6px 0; font-size: 14.5px; color: var(--text-soft); }
+  .news .y { flex: 0 0 40px; color: var(--text-faint); font-size: 13px; padding-top: 1px; }
+
   /* ---------- Brain dump ---------- */
   .post { margin-bottom: 24px; }
   .post .ptitle {
@@ -102,6 +107,7 @@
   <a class="site-name" href="#">Daniel Yue Zhang</a>
   <nav>
     <a href="#about">About</a>
+    <a href="#news">News</a>
     <a href="#brain-dump">Brain dump</a>
   </nav>
 </header>
@@ -127,6 +133,24 @@
     <br>
     I love Anime (My current top picks: DBZ, Claymore, Bleach, Attack on Titan, and One Piece) and Metallica.
   </p>
+</section>
+
+<section id="news">
+  <h2>News</h2>
+  <ul class="news">
+    <li><span class="y">2026</span><span><a href="sauron.html" target="_blank" rel="noopener">Sauron: An Eye for Evidence</a> — our evidence-first agentic verifier for long-horizon tasks</span></li>
+    <li><span class="y">2026</span><span><a href="https://labs.scale.com/blog/verifier-design-for-cua" target="_blank" rel="noopener">Who Grades the Graders?</a> — rethinking verifier design for computer use agents</span></li>
+    <li><span class="y">2026</span><span><a href="https://labs.scale.com/blog/terminal-bench-harder-tasks-for-better-agents" target="_blank" rel="noopener">Terminal-Bench 3.0</a> — harder tasks for better agents</span></li>
+    <li><span class="y">2026</span><span><a href="https://labs.scale.com/blog/mcp-vs-cli" target="_blank" rel="noopener">MCP vs. CLI</a> — does an AI agent's tool interface still matter?</span></li>
+    <li><span class="y">2026</span><span><a href="https://arxiv.org/abs/2609.02095" target="_blank" rel="noopener">READY or Not</a> — reliable enterprise agent deployment</span></li>
+    <li><span class="y">2026</span><span><a href="https://arxiv.org/abs/2608.22077" target="_blank" rel="noopener">Spine-Branch Coordination</a> for multi-agent computer use</span></li>
+    <li><span class="y">2026</span><span><a href="https://arxiv.org/abs/2608.22130" target="_blank" rel="noopener">PropUQ-MAS</a> — uncertainty quantification for LLM multi-agent systems</span></li>
+    <li><span class="y">2026</span><span><a href="https://arxiv.org/abs/2608.11669" target="_blank" rel="noopener">Rubric Dropout</a> — mitigating reward hacking in rubric-as-reward RL</span></li>
+    <li><span class="y">2026</span><span><a href="https://arxiv.org/abs/2608.07796" target="_blank" rel="noopener">CliniCARE-Bench</a> — auditing medical reasoning in EHR</span></li>
+    <li><span class="y">2026</span><span><a href="https://arxiv.org/abs/2606.21654" target="_blank" rel="noopener">ChainWorld</a> — long-horizon desktop workloads from atomic OSWorld tasks</span></li>
+    <li><span class="y">2026</span><span><a href="https://arxiv.org/abs/2602.00933" target="_blank" rel="noopener">MCP-Atlas</a> — large-scale benchmark for tool use with real MCP servers</span></li>
+    <li><span class="y">2025</span><span><a href="https://www.amazon.science/publications" target="_blank" rel="noopener">Amazon Nova 2</a> — multimodal reasoning and generation models</span></li>
+  </ul>
 </section>
 
 <section id="brain-dump">
